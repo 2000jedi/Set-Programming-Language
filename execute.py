@@ -22,6 +22,8 @@ namespaces[""].vars["raw_input"] = op.Inherit(0, sys.stdin.readline)
 namespaces[""].vars["for"] =  op.Inherit(2, op.c_for)
 namespaces[""].vars["range"] = op.Inherit(2, op.c_range)
 namespaces[""].vars["import"] = op.Inherit(1, op.c_import)
+namespaces[""].vars["true"] = op.Number(1,1)
+namespaces[""].vars["false"] = op.Number(0,0)
 
 def evaluate(line):
     stack = []

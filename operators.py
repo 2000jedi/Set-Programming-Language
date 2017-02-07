@@ -21,7 +21,8 @@ class Number:
             
     def reduce(self):
         if self.numerator == 0:
-            self.denominator = 1
+            if self.denominator != 0:
+                self.denominator = 1
             return self
         while self.numerator % 1 != 0.0:
             self.denominator *= 10
@@ -162,8 +163,8 @@ def operate(op, a, b):
         return Function(a, b)
         
 def c_for(a, b):
-    print(a)
-    print(b)
+    #print(a)
+    #print(b)
     pass
 
 def c_range(a, b, c=1):

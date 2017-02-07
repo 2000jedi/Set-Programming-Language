@@ -20,7 +20,9 @@
 	An Atom with brackets around accept Set Operations while an atom without brackets accept Basic Operations (see Operations)
 	
 	\subsubsection{Number}
-	Due to IEEE 754, if an integer is stored in a float or double, it is impossible to determine whether the number is an integer. The numbers in Set Programming Language use Irreducible Fractions to store both integers and decimals. An irreducible fraction contains two integers, a denominator and a numerator. Atoms can only store Irreducible Fractions.
+	Due to IEEE 754, if an integer is stored in a float or double, it is almost impossible to determine whether the number is an integer. The numbers in Set Programming Language use Irreducible Fractions to store both integers and decimals. An irreducible fraction contains two integers, a denominator and a numerator. Atoms can only store Irreducible Fractions.
+	\subsubsection{Boolean}
+	Boolean is special number with true and false only. Typically an atom of 0/0 is false. A set containing value 0/0 is also false. Otherwise, valid numbers and sets are seen as true including zero. During comparison, true is returned as {1/1} and false is {0/0}.
 
 \subsection{Set}
 	Set is a new data structure that is rare in other programming languages. It is similar to an Array, but there are two restrictions:
