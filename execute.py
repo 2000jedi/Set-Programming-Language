@@ -15,7 +15,7 @@ class namespace:
         self.vars = {}
 
 namespaces = {"": namespace("")}
-namespaces[""].vars["print"] = op.Inherit(1, sys.stdout.write)
+namespaces[""].vars["print"] = op.Inherit(1, lambda x:print(x,end=""))
 namespaces[""].vars["println"] = op.Inherit(1, print)
 namespaces[""].vars["input"] = op.Inherit(0, input)
 namespaces[""].vars["raw_input"] = op.Inherit(0, sys.stdin.readline)
@@ -24,6 +24,7 @@ namespaces[""].vars["range"] = op.Inherit(2, op.c_range)
 namespaces[""].vars["import"] = op.Inherit(1, op.c_import)
 namespaces[""].vars["true"] = op.Number(1,1)
 namespaces[""].vars["false"] = op.Number(0,0)
+
 
 def evaluate(line):
     stack = []
@@ -88,8 +89,10 @@ def evaluate(line):
                             argc[j] = op.Number(argc[j])
                         elif argc[j].fsm == lex.lex_fsm.STR:
                             argc[j] = argc[j].data
-                    except:
-                        pass
+                        elif argc[j].fsm == lex.lex_fsm.EXPR:
+                            argc[j] = namespaces[""].vars[argc[j].data]
+                    except Exception as e:
+                        print(e)
                 func = namespaces[""].vars[stack[-1].data]
                 stack.pop()
                 if type(func) == op.Inherit:

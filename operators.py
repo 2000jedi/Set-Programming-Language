@@ -163,9 +163,8 @@ def operate(op, a, b):
         return Function(a, b)
         
 def c_for(a, b):
-    #print(a)
-    #print(b)
-    pass
+    for i in a.data:
+        b.func(i)
 
 def c_range(a, b, c=1):
     pass
