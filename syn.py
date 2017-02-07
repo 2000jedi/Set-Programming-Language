@@ -36,12 +36,14 @@ def segment(line):
             prog.append(line[i])
         elif line[i].fsm in (lex.lex_fsm.BRACKET, lex.lex_fsm.CALL, lex.lex_fsm.ADDR):
             stack.append(line[i])
+            if stack[-1].fsm == lex.lex_fsm.CALL:
+                prog.append(stack[-1])
         elif line[i].fsm == lex.lex_fsm.END_BRACKET:
             while not stack[-1].fsm in (lex.lex_fsm.BRACKET, lex.lex_fsm.CALL):
                 prog.append(stack[-1])
                 stack.pop()
             if stack[-1].fsm == lex.lex_fsm.CALL:
-                prog.append(stack[-1])
+                prog.append(lex.lex_class(lex.lex_fsm.CALL, ")"))
             stack.pop()
         elif line[i].fsm == lex.lex_fsm.END_BRACE:
             while stack[-1].fsm != lex.lex_fsm.ADDR:

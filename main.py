@@ -16,7 +16,7 @@ def main():
     filename = 'debug.sp'
     f = open(os.path.join(os.path.curdir, filename))
     inp = f.readlines()
-    lexical = lex.parse(inp)
+    lexical = [i for i in lex.parse(inp) if i != []] # remove comment lines
     #for i in lexical:
     #    print(i, '\n')
     nodes = syn.parse(lexical)

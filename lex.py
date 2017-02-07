@@ -59,7 +59,7 @@ def parse(raw):
                     else:
                         temp += line[i]
                         i+=1
-                i+=1
+                #i+=1
                 lexs[-1].append(lex_class(lex_fsm.STR, temp))
             elif line[i] == '=':
                 if line[i+1] == '=':

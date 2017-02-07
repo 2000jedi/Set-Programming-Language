@@ -69,29 +69,34 @@ def evaluate(line):
                 temp = stack[-2:]
             stack.append(s)
         elif line[i].fsm == lex.lex_fsm.CALL:
-            argc = [stack[-1]]
-            stack.pop()
-            temp = stack[-2:]
-            while len(temp) > 1 and temp[1].fsm == lex.lex_fsm.SEPERATOR:
-                stack = stack[:-2]
-                argc.append(temp[0])
+            if line[i].data == '(':
+                stack.append(line[i])
+            else:
+                argc = [stack[-1]]
+                stack.pop()
                 temp = stack[-2:]
-            for j in range(len(argc)):
-                try:
-                    if argc[j].fsm == lex.lex_fsm.NUMBER:
-                        argc[j] = op.Number(argc[j])
-                    elif argc[j].fsm == lex.lex_fsm.STR:
-                        argc[j] = argc[j].data
-                except:
-                    pass
-            func = namespaces[""].vars[stack[-1].data]
-            if type(func) == op.Inherit:
-                if func.argc == 1:
-                    func.func(argc[0])
-                if func.argc == 2:
-                    func.func(argc[1], argc[0])
-                if func.argc == 3:
-                    func.func(argc[2], argc[1], argc[0])
+                while len(temp) > 1 and temp[1].fsm != lex.lex_fsm.CALL:
+                    stack = stack[:-2]
+                    argc.append(temp[0])
+                    temp = stack[-2:]
+                stack.pop()
+                for j in range(len(argc)):
+                    try:
+                        if argc[j].fsm == lex.lex_fsm.NUMBER:
+                            argc[j] = op.Number(argc[j])
+                        elif argc[j].fsm == lex.lex_fsm.STR:
+                            argc[j] = argc[j].data
+                    except:
+                        pass
+                func = namespaces[""].vars[stack[-1].data]
+                stack.pop()
+                if type(func) == op.Inherit:
+                    if func.argc == 1:
+                        func.func(argc[0])
+                    if func.argc == 2:
+                        func.func(argc[1], argc[0])
+                    if func.argc == 3:
+                        func.func(argc[2], argc[1], argc[0])
                     
         elif line[i].fsm == lex.lex_fsm.ASSIGN:
             # print(temp, ret)
@@ -100,6 +105,7 @@ def evaluate(line):
             ret = op.varExchange(stack[-1])
             stack.pop()
             namespaces[""].vars[ret] = temp
+            stack.append(temp)
         i+=1
 
 def execute(syn):

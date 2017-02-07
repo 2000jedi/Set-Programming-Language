@@ -162,6 +162,8 @@ def operate(op, a, b):
         return Function(a, b)
         
 def c_for(a, b):
+    print(a)
+    print(b)
     pass
 
 def c_range(a, b, c=1):
