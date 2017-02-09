@@ -17,14 +17,15 @@ class lex_fsm:
     BRACKET = 5 # ()
     END_BRACKET = 4.5
     SET = 6 # {}
-    VEC = 7 # <>
+    VEC = 7 # UNDEFINED!!!
     ADDR = 8 # []
     END_BRACE = 7.5
     SEPERATOR = 9 # ,
     STR = 10
     NAMESPACE = 11
+    FUNC = 12 # ~
     
-    expr_letters = [chr(i) for i in range(65, 90)] + [chr(i) for i in range(97, 122)]
+    expr_letters = [chr(i) for i in range(65, 90)] + [chr(i) for i in range(97, 122)] + ['_']
     numbers = [str(i) for i in range(10)] + ['.']
 
 class lex_class:
@@ -122,7 +123,7 @@ def parse(raw):
                 else:
                     sys.stderr.write('Cannot identify operator: &\n')
             elif line[i] == '~':
-                lexs[-1].append(lex_class(lex_fsm.OPR, '~'))
+                lexs[-1].append(lex_class(lex_fsm.FUNC, '~'))
             elif line[i] == ':':
                 lexs[-1].append(lex_class(lex_fsm.NAMESPACE, ':'))
             elif line[i] == ',':

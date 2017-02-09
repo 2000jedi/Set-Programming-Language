@@ -11,9 +11,11 @@ import lex
 
 priority = {
     '=': 0,
-    '~': 0,
+    '{': 0,
     '&&': 1,
     '\|\|': 1,
+    '<':2,
+    '>':2,
     '<=': 2,
     '>=': 2,
     '!=': 2,
@@ -22,7 +24,6 @@ priority = {
     '-': 3,
     '*': 4,
     '/': 4,
-    ':': 5,
     '(': 0,
     '[': 0
 }
@@ -33,6 +34,8 @@ def segment(line):
     i = 0
     while i < len(line):
         if line[i].fsm in (lex.lex_fsm.EXPR, lex.lex_fsm.NUMBER, lex.lex_fsm.STR):
+            prog.append(line[i])
+        elif line[i].fsm == lex.lex_fsm.FUNC:
             prog.append(line[i])
         elif line[i].fsm in (lex.lex_fsm.BRACKET, lex.lex_fsm.CALL, lex.lex_fsm.ADDR):
             stack.append(line[i])
@@ -52,7 +55,15 @@ def segment(line):
             prog.append(stack[-1])
             stack.pop()
         elif line[i].fsm in (lex.lex_fsm.VEC, lex.lex_fsm.SET):
-            prog.append(line[i])
+            if line[i].data == '{':
+                prog.append(line[i])
+                stack.append(line[i])
+            elif line[i].data == '}':
+                while stack[-1].data != '{':
+                    prog.append(stack[-1])
+                    stack.pop()
+                stack.pop()
+                prog.append(line[i])
         elif line[i].fsm == lex.lex_fsm.SEPERATOR:
             prog.append(line[i])
             temp_line = []
@@ -71,7 +82,7 @@ def segment(line):
             if len(stack) == 0 or priority[stack[-1].data] < priority[line[i].data]:
                 stack.append(line[i])
             else:
-                while not len(stack) == 0:
+                while not len(stack) == 0 and priority[stack[-1].data] >= priority[line[i].data]:
                     prog.append(stack[-1])
                     stack.pop()
                 stack.append(line[i])

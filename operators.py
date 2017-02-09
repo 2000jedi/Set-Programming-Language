@@ -6,7 +6,8 @@ Created on Fri Jan 20 07:00:46 2017
 @author: jedi
 """
 
-import lex, math
+import lex, math, sys
+import execute
 
 class Number:
     def __init__(self, lexi, denominator=None):
@@ -40,11 +41,11 @@ class Number:
         return self
     
     def __add__(self, num):
-        gcd = math.gcd(int(self.denominator), int(num.denominator))
+        gcd = int(int(self.denominator) * int(num.denominator) / math.gcd(int(self.denominator), int(num.denominator)))
         return Number(self.numerator * gcd / self.denominator + num.numerator * gcd / num.denominator, gcd).reduce()
     
     def __sub__(self, num):
-        gcd = math.gcd(int(self.denominator), int(num.denominator))
+        gcd = int(int(self.denominator) * int(num.denominator) / math.gcd(int(self.denominator), int(num.denominator)))
         return Number(self.numerator * gcd / self.denominator - num.numerator * gcd / num.denominator, gcd).reduce()
     
     def __mul__(self, num):
@@ -72,13 +73,17 @@ class Number:
         return (self - num).numerator <= 0
         
     def __repr__(self):
-        return str(int(self.numerator)) + "/" + str(int(self.denominator)) if self.denominator != 1 else str(self.numerator)
+        return str(int(self.numerator)) + "/" + str(int(self.denominator)) if self.denominator != 1 else str(int(self.numerator))
 
 class Set:
-    def __init__(self, first_val):
-        if type(first_val) != Number:
+    def __init__(self, first_val=None):
+        if first_val == None:
+            self.data = []
+        elif type(first_val) == list:
+            self.data = list
+        elif type(first_val) != Number:
             first_val = Number(first_val)
-        self.data = [first_val]
+            self.data = [first_val]
     
     def append(self, val):
         if type(val) != Number:
@@ -90,10 +95,14 @@ class CSet:
     pass
 
 class Vector:
-    def __init__(self, first_val):
-        if type(first_val) != Number:
+    def __init__(self, first_val=None):
+        if first_val == None:
+            self.data = []
+        elif type(first_val) == list:
+            self.data = list
+        elif type(first_val) != Number:
             first_val = Number(first_val)
-        self.data = [first_val]
+            self.data = [first_val]
     
     def append(self, val):
         if type(val) != Number:
@@ -107,6 +116,17 @@ class Function:
     def __init__(self, var, expr):
         self.var = var
         self.expr = expr
+    
+    def __repr__(self):
+        return 'Vars: ' + str(self.var) + ' Exprs: ' + str(self.expr)
+        
+    def func(self, vals):
+        for i in range(len(self.var)):
+            execute.add_var(self.var[i], vals[i])
+        ret_val = execute.evaluate(self.expr)
+        for i in range(len(self.var)):
+            execute.del_var(self.var[i])
+        return ret_val
 
 class String(str):
     pass
@@ -119,9 +139,8 @@ true = Boolean(1, 1)
 false = Boolean(0, 1)
 
 class Inherit:
-    def __init__(self, argc, func):
+    def __init__(self, func):
         self.func = func
-        self.argc = argc
         
 def varExchange(lexi):
     if type(lexi) == lex.lex_class:
@@ -159,12 +178,21 @@ def operate(op, a, b):
         return true if (a == true) or (b == true) else false
     if op == '&&':
         return true if (a == true) and (b == true) else false
-    if op == '~':
-        return Function(a, b)
+
+def println(argc):
+    print(*argc)
+    
+def printf(argc):
+    print(end="", *argc)
         
-def c_for(a, b):
-    for i in a.data:
-        b.func(i)
+def c_for(argc):
+    if len(argc) > 2:
+        sys.stderr.write("Type Error: "+ repr(argc) + "\n")
+    a = argc[0]
+    b = argc[1]
+    return_set = [b.func([i]) for i in a.data]
+    return_set = [i for i in return_set if i != None]
+    return Set(return_set)
 
 def c_range(a, b, c=1):
     pass
