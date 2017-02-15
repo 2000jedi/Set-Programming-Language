@@ -5,7 +5,7 @@ for(a, print_custom)
 println()
 f = {x~3*x+7/3}
 println(f(5))
-print("end of the world\n")
+print("Word of Dawn\n")
 # this is a comment
 x = 5
 x = 3*x+7

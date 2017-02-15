@@ -17,7 +17,7 @@ class lex_fsm:
     BRACKET = 5 # ()
     END_BRACKET = 4.5
     SET = 6 # {}
-    VEC = 7 # UNDEFINED!!!
+    VEC = 7 # issue UNDEFINED!!!
     ADDR = 8 # []
     END_BRACE = 7.5
     SEPERATOR = 9 # ,

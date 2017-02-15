@@ -41,11 +41,11 @@ class Number:
         return self
     
     def __add__(self, num):
-        gcd = int(int(self.denominator) * int(num.denominator) / math.gcd(int(self.denominator), int(num.denominator)))
+        gcd = int(self.denominator * num.denominator / math.gcd(int(self.denominator), int(num.denominator)))
         return Number(self.numerator * gcd / self.denominator + num.numerator * gcd / num.denominator, gcd).reduce()
     
     def __sub__(self, num):
-        gcd = int(int(self.denominator) * int(num.denominator) / math.gcd(int(self.denominator), int(num.denominator)))
+        gcd = int(self.denominator * num.denominator / math.gcd(int(self.denominator), int(num.denominator)))
         return Number(self.numerator * gcd / self.denominator - num.numerator * gcd / num.denominator, gcd).reduce()
     
     def __mul__(self, num):
@@ -81,8 +81,10 @@ class Set:
             self.data = []
         elif type(first_val) == list:
             self.data = list
-        elif type(first_val) != Number:
-            first_val = Number(first_val)
+#        elif type(first_val) != Number:
+#            first_val = Number(first_val)
+#            self.data = [first_val]
+        elif type(first_val) == Number:
             self.data = [first_val]
     
     def append(self, val):
@@ -185,7 +187,7 @@ def println(argc):
 def printf(argc):
     print(end="", *argc)
         
-def c_for(argc):
+def custom_for(argc):
     if len(argc) > 2:
         sys.stderr.write("Type Error: "+ repr(argc) + "\n")
     a = argc[0]
@@ -194,8 +196,8 @@ def c_for(argc):
     return_set = [i for i in return_set if i != None]
     return Set(return_set)
 
-def c_range(a, b, c=1):
-    pass
+def custom_range(a, b, c=1):
+    return Set(range(a, b, c))
 
-def c_import(a):
+def custom_import(a):
     pass
