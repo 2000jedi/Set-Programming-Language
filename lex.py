@@ -43,6 +43,7 @@ def parse(raw):
     lexs = []
 
     for line in raw:
+        line = line + ' '
         i = 0
         lexs.append([])
         while i < len(line):
