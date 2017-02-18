@@ -40,6 +40,12 @@ class Number:
             self.denominator = -self.denominator
         return self
     
+    def toInt(self):
+        return int(self.numerator / self.denominator)
+    
+    def toFloat(self):
+        return self.numerator / self.denominator
+    
     def __add__(self, num):
         gcd = int(self.denominator * num.denominator / math.gcd(int(self.denominator), int(num.denominator)))
         return Number(self.numerator * gcd / self.denominator + num.numerator * gcd / num.denominator, gcd).reduce()
@@ -80,7 +86,7 @@ class Set:
         if first_val == None:
             self.data = []
         elif type(first_val) == list:
-            self.data = list
+            self.data = first_val
 #        elif type(first_val) != Number:
 #            first_val = Number(first_val)
 #            self.data = [first_val]
@@ -92,6 +98,12 @@ class Set:
             val = Number(val)
         self.data.append(val)
         self.data.sort()
+        
+    def __repr__(self):
+        return repr(self.data)
+    
+    def __str__(self):
+        return str(self.data)
 
 class CSet:
     pass
@@ -193,11 +205,16 @@ def custom_for(argc):
     a = argc[0]
     b = argc[1]
     return_set = [b.func([i]) for i in a.data]
-    return_set = [i for i in return_set if i != None]
+    return_set = [i for i in return_set if i is not None]
     return Set(return_set)
 
-def custom_range(a, b, c=1):
-    return Set(range(a, b, c))
+def custom_range(a):
+    if len(a) == 2:
+        return Set(list(range(a[0].toInt(), a[1].toInt())))
+    elif len(a) == 3:
+        return Set(list(range(a[0].toInt(), a[1].toInt(), a[2].toInt())))
+    else:
+        sys.stderr.write("Error Argument Number:", len(a))
 
 def custom_import(a):
     pass

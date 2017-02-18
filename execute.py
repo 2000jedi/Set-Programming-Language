@@ -111,7 +111,7 @@ def evaluate(line):
             if line[i].data == '(':
                 stack.append(line[i])
             else:
-                if type(stack[-1]) != op.Number and stack[-1].data == '(':
+                if not type(stack[-1]) in (op.Number, op.Set) and stack[-1].data == '(':
                     argc = []
                     stack.pop()
                 else:
@@ -124,7 +124,7 @@ def evaluate(line):
                         temp = stack[-2:]
                     stack.pop()
                     for j in range(len(argc)):
-                        if type(argc[j]) != op.Number: 
+                        if not type(argc[j]) in (op.Number, op.Set): 
                             if argc[j].fsm == lex.lex_fsm.STR:
                                 argc[j] = argc[j].data
                             elif argc[j].fsm == lex.lex_fsm.EXPR:
