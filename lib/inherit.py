@@ -31,9 +31,9 @@ def custom_for(argc):
 
 def custom_range(arg):
     if len(arg) == 2:
-        return op.Set(list(range(arg[0].toInt(), arg[1].toInt())))
+        return op.Set([op.Number(i, 1) for i in range(arg[0].toInt(), arg[1].toInt())])
     elif len(arg) == 3:
-        return op.Set(list(range(arg[0].toInt(), arg[1].toInt(), arg[2].toInt())))
+        return op.Set([op.Number(i, 1) for i in range(arg[0].toInt(), arg[1].toInt(), arg[2].toInt())])
     else:
         print("Augumentation Error: "+ len(arg), file=sys.stderr)
 

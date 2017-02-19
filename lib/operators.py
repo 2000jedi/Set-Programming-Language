@@ -148,6 +148,9 @@ class Function:
 class Boolean(Number):
     def isTrue(self):
         return self.denominator != 0
+    
+true = Number(1,1)
+false = Number(0,0)
         
 def varExchange(lexi):
     if type(lexi) == lex.lex_class:
