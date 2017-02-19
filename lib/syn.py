@@ -7,7 +7,7 @@ Created on Thu Jan 19 07:17:32 2017
 """
 
 # import sys
-import lex
+from lib import lex
 
 priority = {
     '=': 0,

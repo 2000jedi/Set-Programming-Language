@@ -5,8 +5,10 @@ Created on Thu Jan 19 19:50:15 2017
 
 @author: jedi
 """
-import lex
-import operators as op
+
+from lib import lex
+from lib import operators as op
+from lib import inherit as ih
 import sys
 
 class var:
@@ -44,13 +46,13 @@ def del_var(name):
     vars[name].pop()
 
 vars = {}
-add_var("print", op.Inherit(lambda x:op.printf(x)))
-add_var("println", op.Inherit(op.println))
-add_var("input", op.Inherit(input))
-add_var("raw_input", op.Inherit(sys.stdin.readline))
-add_var("for", op.Inherit(op.custom_for))
-add_var("range", op.Inherit(op.custom_range))
-add_var("import", op.Inherit(op.custom_import))
+add_var("print", ih.Inherit(lambda x:ih.printf(x)))
+add_var("println", ih.Inherit(ih.println))
+add_var("input", ih.Inherit(input))
+add_var("raw_input", ih.Inherit(sys.stdin.readline))
+add_var("for", ih.Inherit(ih.custom_for))
+add_var("range", ih.Inherit(ih.custom_range))
+add_var("import", ih.Inherit(ih.custom_import))
 add_var("true", op.Number(1,1))
 add_var("false", op.Number(0,0))
 
@@ -62,7 +64,9 @@ def evaluate(line):
     while i < len(line):
         if line[i].fsm == lex.lex_fsm.NUMBER:
             stack.append(op.Number(line[i]))
-        if line[i].fsm in (lex.lex_fsm.EXPR, lex.lex_fsm.STR):
+        if line[i].fsm == lex.lex_fsm.STR:
+            stack.append(line[i].data)
+        if line[i].fsm == lex.lex_fsm.EXPR:
             stack.append(line[i])            
         elif line[i].fsm == lex.lex_fsm.OPR:
             temp = op.varExchange(stack[-1])
@@ -111,7 +115,7 @@ def evaluate(line):
             if line[i].data == '(':
                 stack.append(line[i])
             else:
-                if not type(stack[-1]) in (op.Number, op.Set) and stack[-1].data == '(':
+                if not type(stack[-1]) in (op.Number, op.Set, str) and stack[-1].data == '(':
                     argc = []
                     stack.pop()
                 else:
@@ -124,10 +128,8 @@ def evaluate(line):
                         temp = stack[-2:]
                     stack.pop()
                     for j in range(len(argc)):
-                        if not type(argc[j]) in (op.Number, op.Set): 
-                            if argc[j].fsm == lex.lex_fsm.STR:
-                                argc[j] = argc[j].data
-                            elif argc[j].fsm == lex.lex_fsm.EXPR:
+                        if not type(argc[j]) in (op.Number, op.Set, str): 
+                            if argc[j].fsm == lex.lex_fsm.EXPR:
                                 argc[j] = get_var(argc[j].data)
                 func = get_var(stack[-1].data)
                 stack.pop()
@@ -138,7 +140,7 @@ def evaluate(line):
             ret = op.varExchange(stack[-1])
             stack.pop()
             set_var(ret, temp)
-            stack.append(temp)
+            # stack.append(temp)
         i+=1
     if len(stack) != 0:
         return stack[-1]

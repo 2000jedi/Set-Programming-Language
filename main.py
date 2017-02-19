@@ -7,16 +7,14 @@ Created on Thu Jan 18 21:11:54 2017
 """
 
 import os
-import lex
-import syn
-import execute
+from lib import lex, syn, execute
 
 def main():
     # filename = sys.argv[1]
     filename = 'debug.sp'
     f = open(os.path.join(os.path.curdir, filename))
     inp = f.readlines()
-    lexical = [i for i in lex.parse(inp) if i != []] # remove comment lines
+    lexical = [i for i in lex.parse(inp) if i != []] # remove comments
 #    for i in lexical:
 #        print(i, '\n')
 #    print("lex complete")

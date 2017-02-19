@@ -6,8 +6,8 @@ Created on Fri Jan 20 07:00:46 2017
 @author: jedi
 """
 
-import lex, math, sys
-import execute
+import math
+from lib import lex, execute
 
 class Number:
     def __init__(self, lexi, denominator=None):
@@ -142,19 +142,12 @@ class Function:
             execute.del_var(self.var[i])
         return ret_val
 
-class String(str):
-    pass
+# class String(str):
+#     pass
 
 class Boolean(Number):
     def isTrue(self):
         return self.denominator != 0
-        
-true = Boolean(1, 1)
-false = Boolean(0, 1)
-
-class Inherit:
-    def __init__(self, func):
-        self.func = func
         
 def varExchange(lexi):
     if type(lexi) == lex.lex_class:
@@ -192,29 +185,3 @@ def operate(op, a, b):
         return true if (a == true) or (b == true) else false
     if op == '&&':
         return true if (a == true) and (b == true) else false
-
-def println(argc):
-    print(*argc)
-    
-def printf(argc):
-    print(end="", *argc)
-        
-def custom_for(argc):
-    if len(argc) > 2:
-        sys.stderr.write("Type Error: "+ repr(argc) + "\n")
-    a = argc[0]
-    b = argc[1]
-    return_set = [b.func([i]) for i in a.data]
-    return_set = [i for i in return_set if i is not None]
-    return Set(return_set)
-
-def custom_range(a):
-    if len(a) == 2:
-        return Set(list(range(a[0].toInt(), a[1].toInt())))
-    elif len(a) == 3:
-        return Set(list(range(a[0].toInt(), a[1].toInt(), a[2].toInt())))
-    else:
-        sys.stderr.write("Error Argument Number:", len(a))
-
-def custom_import(a):
-    pass
