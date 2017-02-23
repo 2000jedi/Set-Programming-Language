@@ -8,36 +8,40 @@ Created on Thu Jan 19 07:12:34 2017
 
 import sys
 
+
 class lex_fsm:
     NUMBER = 0
-    ASSIGN = 1 # =
+    ASSIGN = 1  # =
     EXPR = 2
     OPR = 3
-    CALL = 4 # ()
-    BRACKET = 5 # ()
+    CALL = 4  # ()
+    BRACKET = 5  # ()
     END_BRACKET = 4.5
-    SET = 6 # {}
-    VEC = 7 # issue UNDEFINED!!!
-    ADDR = 8 # []
+    SET = 6  # {}
+    VEC = 7  # issue UNDEFINED!!!
+    ADDR = 8  # []
     END_BRACE = 7.5
-    SEPERATOR = 9 # ,
+    SEPERATOR = 9  # ,
     STR = 10
     NAMESPACE = 11
-    FUNC = 12 # ~
-    
+    FUNC = 12  # ~
+
     expr_letters = [chr(i) for i in range(65, 90)] + [chr(i) for i in range(97, 122)] + ['_']
     numbers = [str(i) for i in range(10)] + ['.']
+
 
 class lex_class:
     def __init__(self, fsm, data):
         self.fsm = fsm
         self.data = data
-        
+
     def __repr__(self):
         return str((self.fsm, self.data))
 
+
 def process_escapes(raw):
     return raw.encode().decode('unicode_escape')
+
 
 def parse(raw):
     lexs = []
@@ -53,56 +57,56 @@ def parse(raw):
                 i = len(line)
             elif line[i] == '"':
                 temp = ''
-                i+=1
-                while line[i]!='"':
+                i += 1
+                while line[i] != '"':
                     if line[i] == '\\':
-                        temp += process_escapes(line[i] + line[i+1])
-                        i+=2
+                        temp += process_escapes(line[i] + line[i + 1])
+                        i += 2
                     else:
                         temp += line[i]
-                        i+=1
-                #i+=1
+                        i += 1
+                # i+=1
                 lexs[-1].append(lex_class(lex_fsm.STR, temp))
             elif line[i] == '=':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '=='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.ASSIGN, '='))
             elif line[i] == '+':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '+='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '+'))
             elif line[i] == '-':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '-='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '-'))
             elif line[i] == '*':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '*='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '*'))
             elif line[i] == '/':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '/='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '/'))
             elif line[i] == '<':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '<='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '<'))
             elif line[i] == '>':
-                if line[i+1] == '=':
+                if line[i + 1] == '=':
                     lexs[-1].append(lex_class(lex_fsm.OPR, '>='))
-                    i+=1
+                    i += 1
                 else:
                     lexs[-1].append(lex_class(lex_fsm.OPR, '>'))
             elif line[i] == '!':
