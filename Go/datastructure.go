@@ -94,10 +94,10 @@ func (s *set) append(n number) {
 		if !lt(i, n) {
 			flag = false
 			if !equal(i, n) {
-				tmp := make([]number, pos+1)
-				copy(tmp, s.data[:pos+1])
+				tmp := make([]number, pos)
+				copy(tmp, s.data[:pos])
 				tmp = append(tmp, n)
-				tmp = append(tmp, s.data[pos+1:]...)
+				tmp = append(tmp, s.data[pos:]...)
 				s.data = tmp
 				return
 			} else {
