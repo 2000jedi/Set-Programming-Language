@@ -28,6 +28,10 @@ func is_number(c byte) bool {
 	return ('0' <= c && c <= '9') || c == '.'
 }
 
+func not_opr(c int) bool {
+	return c != var_fsm["number"] && c != var_fsm["set"] && c != var_fsm["addr"]
+}
+
 func lex_parse(lines []string) (lex_lines []Stack) {
 	for _, line := range lines {
 		var lexs Stack
@@ -59,12 +63,30 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 				} else {
 					push(&lexs, "assign", "=")
 				}
-			case '+', '-', '*', '/', '<', '>':
+			case '+', '*', '/', '<', '>':
 				if line[i+1] == '=' {
 					push(&lexs, "opr", string(line[i])+"=")
 					i++
 				} else {
 					push(&lexs, "opr", string(line[i]))
+				}
+			case '-':
+				if is_number(line[i+1]) && not_opr(lexs.Top().data.(*lexical).fsm) {
+					temp := string(line[i])
+					i++
+					for is_number(line[i]) {
+						temp += string(line[i])
+						i++
+					}
+					i--
+					push(&lexs, "number", temp)
+				} else {
+					if line[i+1] == '=' {
+						push(&lexs, "opr", string(line[i])+"=")
+						i++
+					} else {
+						push(&lexs, "opr", string(line[i]))
+					}
 				}
 			case '!':
 				if line[i+1] == '=' {
@@ -129,7 +151,9 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 			}
 			i++
 		}
-		lex_lines = append(lex_lines, lexs)
+		if lexs.Len() != 0 {
+			lex_lines = append(lex_lines, lexs)
+		}
 	}
 	return
 }

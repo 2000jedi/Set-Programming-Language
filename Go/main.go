@@ -8,15 +8,22 @@ import (
 	"strings"
 )
 
+var debug_flag bool
+
 func interactive() {
 	fmt.Println("SPL 0.1 (build on Go1.8)")
 	fmt.Println("Type exit() to exit")
 	reader := bufio.NewReader(os.Stdin)
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println(r)
-		}
-	}()
+
+	if !debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(r)
+			}
+		}()
+	}
+	var variable Variable
+	variable.init()
 	for {
 		fmt.Print(">>> ")
 		text, err := reader.ReadString('\n')
@@ -28,17 +35,20 @@ func interactive() {
 			panic("User Exit")
 		}
 		file := strings.Split(text, "\n")
-		execute(syn_parse(lex_parse(file)))
+		execute(syn_parse(lex_parse(file)), &variable)
 	}
 }
 
-func debug(s string) {
+func runfile(s string) Variable {
 	dat, err := ioutil.ReadFile(s)
 	if err != nil {
 		panic(err)
 	}
 	file := strings.Split(string(dat), "\n")
-	execute(syn_parse(lex_parse(file)))
+	var variable Variable
+	variable.init()
+	execute(syn_parse(lex_parse(file)), &variable)
+	return variable
 }
 
 func help() {
@@ -49,13 +59,14 @@ func help() {
 }
 
 func main() {
+	debug_flag = false
 	if len(os.Args) == 1 {
 		interactive()
 	} else {
 		if os.Args[1] == "--help" {
 			help()
 		} else {
-			debug(os.Args[1])
+			runfile(os.Args[1])
 		}
 	}
 }

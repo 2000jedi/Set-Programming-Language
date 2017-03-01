@@ -5,7 +5,7 @@ A set is a typical array with no duplicated data and all values within a set is 
 
 The biggest difference between this programming language and other languages is that the for loop and functions only contain one line. Functions are all lambda and contain one line of code. For loops becomes a function instead of a statement. This programming languages inherits the spirit of functional programming.
 
-Althought it is not completed. The spirit part can be shown.
+Although it is not completed. The spirit part can be shown.
 
 
 

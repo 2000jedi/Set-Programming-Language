@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"fmt"
 	"math"
 	"strconv"
@@ -76,47 +77,50 @@ func (n *number) print() {
 }
 
 type set struct {
-	data []number
+	data *list.List
 }
 
-func (s *set) find(n number) int {
-	for pos, i := range s.data {
-		if equal(n, i) {
-			return pos
+func (s *set) find(n number) bool {
+	for e := s.data.Front(); e != nil; e = e.Next() {
+		if e.Value == n {
+			return true
 		}
 	}
-	return -1
+	return false
+}
+
+func (s *set) new() {
+	s.data = list.New()
 }
 
 func (s *set) append(n number) {
 	flag := true
-	for pos, i := range s.data {
-		if !lt(i, n) {
+	for p := s.data.Front(); p != nil; p = p.Next() {
+		if !lt(p.Value.(number), n) {
 			flag = false
-			if !equal(i, n) {
-				tmp := make([]number, pos)
-				copy(tmp, s.data[:pos])
-				tmp = append(tmp, n)
-				tmp = append(tmp, s.data[pos:]...)
-				s.data = tmp
+			if !equal(p.Value.(number), n) {
+				s.data.InsertBefore(n, p)
 				return
 			} else {
 				return
 			}
 		}
 	}
+
 	if flag {
-		s.data = append(s.data, n)
+		s.data.PushBack(n)
 	}
 }
 
 func (s *set) toString() (ret string) {
 	ret = "{"
-	for pos, i := range s.data {
-		if pos != len(s.data)-1 {
-			ret += i.toString() + ", "
+	var temp number
+	for p := s.data.Front(); p != nil; p = p.Next() {
+		temp = p.Value.(number)
+		if p.Next() != nil {
+			ret += temp.toString() + ", "
 		} else {
-			ret += i.toString() + "}"
+			ret += temp.toString() + "}"
 		}
 	}
 	return
@@ -131,11 +135,11 @@ type function struct {
 	exprs []storage
 }
 
-func (f *function) function(vals []storage) (ret_val *storage) {
+func (f *function) function(vals []storage, variable *Variable) (ret_val *storage) {
 	for i, val := range f.argv {
 		variable.add(val.data.(string), vals[i])
 	}
-	ret_val = evaluate(f.exprs)
+	ret_val = evaluate(f.exprs, variable)
 	for _, val := range f.argv {
 		variable.del(val.data.(string))
 	}
@@ -143,7 +147,7 @@ func (f *function) function(vals []storage) (ret_val *storage) {
 }
 
 type inherit struct {
-	function func(data []storage) *storage
+	function func(data []storage, variable *Variable) *storage
 }
 
 type Stack []*storage
@@ -179,6 +183,8 @@ func init() {
 	var_fsm["fsm"] = 3
 	var_fsm["inherit"] = 4
 	var_fsm["set"] = 5
+	var_fsm["array"] = 6
+	var_fsm["namespace"] = 7
 
 	lex_fsm = make(map[string]int)
 	lex_fsm["number"] = 0

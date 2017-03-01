@@ -18,6 +18,7 @@ func init() {
 	priority["-"] = 3
 	priority["*"] = 4
 	priority["/"] = 4
+	priority[":"] = 5
 	priority["("] = 0
 	priority["["] = 0
 }

@@ -69,12 +69,12 @@ func div(n, n_ number) (res number) {
 	return
 }
 
-func do_func(lambda storage, argc []storage) *storage {
+func do_func(lambda storage, argc []storage, variable *Variable) *storage {
 	if lambda.vartype == var_fsm["function"] {
 		f := lambda.data.(function)
-		return f.function(argc)
+		return f.function(argc, variable)
 	} else {
 		f := lambda.data.(inherit)
-		return f.function(argc)
+		return f.function(argc, variable)
 	}
 }

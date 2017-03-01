@@ -6,12 +6,20 @@ type Variable struct {
 	stack map[string]*Stack
 }
 
+func (v *Variable) init() {
+	v.stack = make(map[string]*Stack)
+	v.add("println", storage{var_fsm["inherit"], inherit{println}})
+	v.add("print", storage{var_fsm["inherit"], inherit{printf}})
+	v.add("for", storage{var_fsm["inherit"], inherit{custom_for}})
+	v.add("range", storage{var_fsm["inherit"], inherit{custom_range}})
+	v.add("import", storage{var_fsm["inherit"], inherit{custom_import}})
+}
+
 func (v *Variable) add(name string, val storage) {
 	if _, ok := v.stack[name]; ok {
 		v.stack[name].Push(&val)
 	} else {
 		v.stack[name] = &Stack{&val}
-		//v.stack[name].Push(&val)
 	}
 }
 
@@ -42,8 +50,6 @@ func (v *Variable) set(name string, val storage) {
 		v.stack[name] = &Stack{&val}
 	}
 }
-
-var variable Variable
 
 func operation(op string, num1, num2 storage) *storage {
 	if num1.vartype == var_fsm["number"] && num2.vartype == var_fsm["number"] {
@@ -112,27 +118,40 @@ func operation(op string, num1, num2 storage) *storage {
 		default:
 			panic("Unknown operator: " + op)
 		}
-	} else {
-		panic("Method not allowed")
 	}
+	if num1.vartype == var_fsm["set"] && num2.vartype == var_fsm["number"] {
+		var temp set
+		switch op {
+		case "+":
+			temp.data = num1.data.(set).data
+			temp.append(num2.data.(number))
+			return &storage{var_fsm["set"], temp}
+		default:
+			panic("Unknown operator: " + op)
+		}
+	}
+
+	panic("Method not allowed")
 }
 
-func evaluate(line []storage) *storage {
+func evaluate(line []storage, variable *Variable) *storage {
 	var stack Stack
 	i := 0
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("\n\033[1;31mError in char: %d ->", i)
-			fmt.Println(line[i])
-			fmt.Println("Debug Detail:")
-			for _, val := range line {
-				fmt.Print(val.data)
+	if !debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Printf("\n\033[1;31mError in char: %d ->", i)
+				fmt.Println(line[i])
+				fmt.Println("Debug Detail:")
+				for _, val := range line {
+					fmt.Print(val.data)
+				}
+				fmt.Println()
+				fmt.Println(r)
+				fmt.Printf("\033[0m\n")
 			}
-			fmt.Println()
-			fmt.Println(r)
-			fmt.Printf("\033[0m\n")
-		}
-	}()
+		}()
+	}
 	for i < len(line) {
 		switch getlex(&line[i]).fsm {
 		case lex_fsm["number"]:
@@ -156,6 +175,12 @@ func evaluate(line []storage) *storage {
 			if ret_pointer != nil {
 				stack.Push(ret_pointer)
 			}
+		case lex_fsm["namespace"]:
+			temp := *stack.Pop()
+			ret := *stack.Pop()
+			namespace := variable.get(ret.data.(string)).data.(Variable)
+			val := namespace.get(temp.data.(string))
+			stack.Push(&val)
 		case lex_fsm["seperator"]:
 			stack.Push(&line[i])
 		case lex_fsm["set"]:
@@ -188,6 +213,7 @@ func evaluate(line []storage) *storage {
 				} else {
 					segment_data = append(segment_data, storage{var_fsm["fsm"], &lexical{lex_fsm["seperator"], ","}})
 					var ret set
+					ret.new()
 					for len(segment_data) != 0 {
 						j := 0
 						for getlex(&segment_data[j]).data != "," {
@@ -199,7 +225,7 @@ func evaluate(line []storage) *storage {
 						copy(split_seperated, split)
 						segment_data = make([]storage, len(split_segment), len(split_segment))
 						copy(segment_data, split_segment)
-						ret.append(evaluate(split).data.(number))
+						ret.append(evaluate(split, variable).data.(number))
 					}
 					stack.Push(&storage{var_fsm["set"], ret})
 				}
@@ -229,13 +255,17 @@ func evaluate(line []storage) *storage {
 				for index, data := range argc {
 					argc_[len(argc)-index-1] = data
 				}
-				ret := do_func(lambda, argc_)
+				ret := do_func(lambda, argc_, variable)
 				if ret != nil {
 					stack.Push(ret)
 				}
 			}
 		case lex_fsm["assign"]:
 			temp := stack.Pop()
+			if temp.vartype == var_fsm["expr"] {
+				temp_ := variable.get(temp.data.(string))
+				temp = &temp_
+			}
 			ret := stack.Pop()
 			variable.set(ret.data.(string), *temp)
 		}
@@ -247,12 +277,8 @@ func evaluate(line []storage) *storage {
 	return nil
 }
 
-func execute(lines [][]storage) {
+func execute(lines [][]storage, variable *Variable) {
 	for _, line := range lines {
-		evaluate(line)
+		evaluate(line, variable)
 	}
-}
-
-func init() {
-	variable.stack = make(map[string]*Stack)
 }

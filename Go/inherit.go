@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func printf(data []storage) *storage {
+func printf(data []storage, variable *Variable) *storage {
 	for _, val := range data {
 		switch val.vartype {
 		case var_fsm["number"]:
@@ -18,7 +18,7 @@ func printf(data []storage) *storage {
 	return nil
 }
 
-func println(data []storage) *storage {
+func println(data []storage, variable *Variable) *storage {
 	for _, val := range data {
 		switch val.vartype {
 		case var_fsm["number"]:
@@ -35,18 +35,22 @@ func println(data []storage) *storage {
 	return nil
 }
 
-func custom_for(data []storage) *storage {
+func custom_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic("Wrong number of arguments")
 	}
-	a := data[0]
+	if data[0].vartype != var_fsm["set"] || data[1].vartype != var_fsm["number"] {
+		panic("Wrong type of arguments")
+	}
+	a := data[0].data.(set).data
 	b := data[1]
 
 	return_set := set{}
-	for _, val := range a.data.(set).data {
+	return_set.new()
+	for p := a.Front(); p != nil; p = p.Next() {
 		var stg []storage
-		stg = append(stg, storage{var_fsm["number"], val})
-		ret := do_func(b, stg)
+		stg = append(stg, storage{var_fsm["number"], p.Value.(number)})
+		ret := do_func(b, stg, variable)
 		if ret != nil {
 			return_set.append(ret.data.(number))
 		}
@@ -54,7 +58,7 @@ func custom_for(data []storage) *storage {
 	return &storage{var_fsm["set"], return_set}
 }
 
-func custom_range(data []storage) *storage {
+func custom_range(data []storage, variable *Variable) *storage {
 	init := 0
 	end := 0
 	step := 1
@@ -78,15 +82,17 @@ func custom_range(data []storage) *storage {
 		panic("Wrong number of arguments")
 	}
 	var ret set
+	ret.new()
 	for i := init; i < end; i += step {
 		ret.append(number{i, 1})
 	}
 	return &storage{var_fsm["set"], ret}
 }
 
-func init() {
-	variable.add("println", storage{var_fsm["inherit"], inherit{println}})
-	variable.add("print", storage{var_fsm["inherit"], inherit{printf}})
-	variable.add("for", storage{var_fsm["inherit"], inherit{custom_for}})
-	variable.add("range", storage{var_fsm["inherit"], inherit{custom_range}})
+func custom_import(data []storage, variable *Variable) *storage {
+	if len(data) > 1 {
+		panic("Wrong number of arguments")
+	}
+	var_ := runfile(data[0].data.(string) + ".sp")
+	return &storage{var_fsm["namespace"], var_}
 }
