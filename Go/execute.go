@@ -123,8 +123,29 @@ func operation(op string, num1, num2 storage) *storage {
 		var temp set
 		switch op {
 		case "+":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(p.Value)
+			}
 			temp.data = num1.data.(set).data
 			temp.append(num2.data.(number))
+			return &storage{var_fsm["set"], temp}
+		case "-":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(p.Value)
+			}
+			temp.remove(num2.data.(number))
+			return &storage{var_fsm["set"], temp}
+		case "*":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(p.Value)
+			}
+			num := num2.data.(number)
+			for p := temp.data.Front(); p != nil; p = p.Next() {
+				p.Value = mul(p.Value.(number), num)
+			}
 			return &storage{var_fsm["set"], temp}
 		default:
 			panic("Unknown operator: " + op)

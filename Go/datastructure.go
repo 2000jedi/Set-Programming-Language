@@ -93,6 +93,16 @@ func (s *set) new() {
 	s.data = list.New()
 }
 
+func (s *set) remove(n number) bool {
+	for e := s.data.Front(); e != nil; e = e.Next() {
+		if e.Value == n {
+			s.data.Remove(e)
+			return true
+		}
+	}
+	return false
+}
+
 func (s *set) append(n number) {
 	flag := true
 	for p := s.data.Front(); p != nil; p = p.Next() {
