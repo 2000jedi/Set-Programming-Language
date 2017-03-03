@@ -24,12 +24,16 @@ func is_expr_letters(c byte) bool {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_'
 }
 
+func is_expr_letter_latter(c byte) bool {
+	return '0' <= c && c <= '9'
+}
+
 func is_number(c byte) bool {
 	return ('0' <= c && c <= '9') || c == '.'
 }
 
 func not_opr(c int) bool {
-	return c != var_fsm["number"] && c != var_fsm["set"] && c != var_fsm["addr"]
+	return c != var_fsm["number"] && c != var_fsm["set"] && c != var_fsm["addr"] && c != var_fsm["expr"]
 }
 
 func lex_parse(lines []string) (lex_lines []Stack) {

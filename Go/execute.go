@@ -13,6 +13,7 @@ func (v *Variable) init() {
 	v.add("for", storage{var_fsm["inherit"], inherit{custom_for}})
 	v.add("range", storage{var_fsm["inherit"], inherit{custom_range}})
 	v.add("import", storage{var_fsm["inherit"], inherit{custom_import}})
+	v.add("array", storage{var_fsm["inherit"], inherit{gen_array}})
 }
 
 func (v *Variable) add(name string, val storage) {
@@ -147,6 +148,16 @@ func operation(op string, num1, num2 storage) *storage {
 				p.Value = mul(p.Value.(number), num)
 			}
 			return &storage{var_fsm["set"], temp}
+		case "/":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(p.Value)
+			}
+			num := num2.data.(number)
+			for p := temp.data.Front(); p != nil; p = p.Next() {
+				p.Value = div(p.Value.(number), num)
+			}
+			return &storage{var_fsm["set"], temp}
 		default:
 			panic("Unknown operator: " + op)
 		}
@@ -161,13 +172,6 @@ func evaluate(line []storage, variable *Variable) *storage {
 	if !debug_flag {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Printf("\n\033[1;31mError in char: %d ->", i)
-				fmt.Println(line[i])
-				fmt.Println("Debug Detail:")
-				for _, val := range line {
-					fmt.Print(val.data)
-				}
-				fmt.Println()
 				fmt.Println(r)
 				fmt.Printf("\033[0m\n")
 			}
@@ -289,6 +293,19 @@ func evaluate(line []storage, variable *Variable) *storage {
 			}
 			ret := stack.Pop()
 			variable.set(ret.data.(string), *temp)
+		case lex_fsm["addr"]:
+			if getlex(&line[i]).data == "[" {
+				var addr []storage
+				i++
+				for getlex(&line[i]).data != "]" {
+					addr = append(addr, line[i])
+					i++
+				}
+				ret := evaluate(addr, variable)
+				arr := variable.get(stack.Pop().data.(string)).data.(array)
+				num := ret.data.(number)
+				stack.Push(&storage{var_fsm["number"], arr.get(num.toInt())})
+			}
 		}
 		i++
 	}

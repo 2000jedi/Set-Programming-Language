@@ -11,6 +11,9 @@ func printf(data []storage, variable *Variable) *storage {
 		case var_fsm["set"]:
 			num := val.data.(set)
 			fmt.Print(num.toString())
+		case var_fsm["array"]:
+			num := val.data.(array)
+			fmt.Print(num.toString())
 		default:
 			fmt.Print(val.data)
 		}
@@ -19,18 +22,7 @@ func printf(data []storage, variable *Variable) *storage {
 }
 
 func println(data []storage, variable *Variable) *storage {
-	for _, val := range data {
-		switch val.vartype {
-		case var_fsm["number"]:
-			num := val.data.(number)
-			fmt.Print(num.toString())
-		case var_fsm["set"]:
-			num := val.data.(set)
-			fmt.Print(num.toString())
-		default:
-			fmt.Print(val.data)
-		}
-	}
+	printf(data, variable)
 	fmt.Println()
 	return nil
 }
@@ -95,4 +87,13 @@ func custom_import(data []storage, variable *Variable) *storage {
 	}
 	var_ := runfile(data[0].data.(string) + ".sp")
 	return &storage{var_fsm["namespace"], var_}
+}
+
+func gen_array(data []storage, variable *Variable) *storage {
+	var temp array
+	temp.new()
+	for _, data := range data {
+		temp.append(data.data.(number))
+	}
+	return &storage{var_fsm["array"], temp}
 }

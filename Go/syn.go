@@ -20,7 +20,6 @@ func init() {
 	priority["/"] = 4
 	priority[":"] = 5
 	priority["("] = 0
-	priority["["] = 0
 }
 
 func getlex(temp *storage) lexical {
@@ -36,11 +35,13 @@ func segment(line Stack) (prog []storage) {
 			prog = append(prog, *line[i])
 		case lex_fsm["func"]:
 			prog = append(prog, *line[i])
-		case lex_fsm["bracket"], lex_fsm["call"], lex_fsm["addr"]:
+		case lex_fsm["bracket"], lex_fsm["call"]:
 			stack.Push(line[i])
 			if getlex(stack.Top()).fsm == lex_fsm["call"] {
 				prog = append(prog, *stack.Top())
 			}
+		case lex_fsm["addr"]:
+			prog = append(prog, *line[i])
 		case lex_fsm["end_bracket"]:
 			for !(getlex(stack.Top()).fsm == lex_fsm["bracket"] || getlex(stack.Top()).fsm == lex_fsm["call"]) {
 				prog = append(prog, *stack.Pop())
