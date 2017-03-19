@@ -61,5 +61,44 @@
 	String is a special vector, similar to most programming languages. However, it should have a different implementation using consequtive memory spaces.
 	
 \section{Operation}
-
+\subsection{Numbers}
+	Unary Operation
+	\begin{enumerate}
+		\item -x
+	\end{enumerate}
+	Binary Operation: 
+	\begin{enumerate}
+		\item x+y
+		\item x-y
+		\item x*y
+		\item x/y
+		\item x\%y
+		\item x\&y
+		\item x$|$y
+		\item x==y
+		\item x!=y
+		\item x>y
+		\item x<y
+		\item x>=y
+		\item x<=y
+		\item x\&\&y
+		\item x$||$y
+	\end{enumerate}
+\subsection{Set \& Number}
+	Binary Operation:
+	\begin{enumerate}
+		\item s+x == s.append(x)
+		\item s-x == s.remove(x)
+		\item s*x == s.forEach({this$\sim$this*x})
+		\item s/x == s.forEach({this$\sim$this/x})
+		\item s\%x ==s.forEach({this$\sim$this\%x})
+	\end{enumerate}
+\subsection{Sets}
+	Binary Operation:
+	\begin{enumerate}
+		\item u+v == v.forEach(u.append)
+		\item u-v == v.forEach(u.remove)
+		\item u*v == v.forEach(u.exist)
+		\item u/v == (u+v).forEach(xnor(u.exist,v.exist))
+	\end{enumerate}
 \end{document}
