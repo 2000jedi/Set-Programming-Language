@@ -3,25 +3,25 @@ package main
 import "fmt"
 
 func invoke_inherit(v *Variable){
-  v.add("println", storage{var_fsm["c_function"], inherit{inherit_println}})
-	v.add("print", storage{var_fsm["c_function"], inherit{inherit_printf}})
-	v.add("for", storage{var_fsm["c_function"], inherit{inherit_for}})
-	v.add("range", storage{var_fsm["c_function"], inherit{inherit_range}})
-	v.add("import", storage{var_fsm["c_function"], inherit{inherit_import}})
-	v.add("array", storage{var_fsm["c_function"], inherit{inherit_gen_array}})
-  v.add("set", storage{var_fsm["c_function"], inherit{inherit_gen_set}})
+  v.add("println", storage{VAR_C_FUNCTION, inherit{inherit_println}})
+	v.add("print", storage{VAR_C_FUNCTION, inherit{inherit_printf}})
+	v.add("for", storage{VAR_C_FUNCTION, inherit{inherit_for}})
+	v.add("range", storage{VAR_C_FUNCTION, inherit{inherit_range}})
+	v.add("import", storage{VAR_C_FUNCTION, inherit{inherit_import}})
+	v.add("array", storage{VAR_C_FUNCTION, inherit{inherit_gen_array}})
+  v.add("set", storage{VAR_C_FUNCTION, inherit{inherit_gen_set}})
 }
 
 func inherit_printf(data []storage, variable *Variable) *storage {
 	for _, val := range data {
 		switch val.vartype {
-		case var_fsm["number"]:
+		case VAR_NUMBER:
 			num := val.data.(number)
 			fmt.Print(num.toString())
-		case var_fsm["set"]:
+		case VAR_SET:
 			num := val.data.(set)
 			fmt.Print(num.toString())
-		case var_fsm["array"]:
+		case VAR_ARRAY:
 			num := val.data.(array)
 			fmt.Print(num.toString())
 		default:
@@ -41,7 +41,7 @@ func inherit_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic("Wrong number of arguments")
 	}
-	if data[0].vartype != var_fsm["set"] || (data[1].vartype != var_fsm["c_function"] && data[1].vartype != var_fsm["function"]) {
+	if data[0].vartype != VAR_SET || (data[1].vartype != VAR_C_FUNCTION && data[1].vartype != VAR_FUNCTION) {
 		panic("Wrong type of arguments")
 	}
 	a := data[0].data.(set).data
@@ -51,13 +51,13 @@ func inherit_for(data []storage, variable *Variable) *storage {
 	return_set.new()
 	for p := a.Front(); p != nil; p = p.Next() {
 		var stg []storage
-		stg = append(stg, storage{var_fsm["number"], p.Value.(number)})
+		stg = append(stg, storage{VAR_NUMBER, p.Value.(number)})
 		ret := do_func(b, stg, variable)
 		if ret != nil {
 			return_set.append(ret.data.(number))
 		}
 	}
-	return &storage{var_fsm["set"], return_set}
+	return &storage{VAR_SET, return_set}
 }
 
 func inherit_range(data []storage, variable *Variable) *storage {
@@ -88,7 +88,7 @@ func inherit_range(data []storage, variable *Variable) *storage {
 	for i := init; i < end; i += step {
 		ret.append(number{i, 1})
 	}
-	return &storage{var_fsm["set"], ret}
+	return &storage{VAR_SET, ret}
 }
 
 func inherit_import(data []storage, variable *Variable) *storage {
@@ -96,7 +96,7 @@ func inherit_import(data []storage, variable *Variable) *storage {
 		panic("Wrong number of arguments")
 	}
 	var_ := runfile(data[0].data.(string) + ".sp")
-	return &storage{var_fsm["namespace"], var_}
+	return &storage{VAR_NAMESPACE, var_}
 }
 
 func inherit_gen_array(data []storage, variable *Variable) *storage {
@@ -105,7 +105,7 @@ func inherit_gen_array(data []storage, variable *Variable) *storage {
 	for _, v := range data {
 		r.append(v.data.(number))
 	}
-	return &storage{var_fsm["array"], r}
+	return &storage{VAR_ARRAY, r}
 }
 
 func inherit_gen_set(data []storage, variable *Variable) *storage {
@@ -114,5 +114,5 @@ func inherit_gen_set(data []storage, variable *Variable) *storage {
   for _, v := range data {
     r.append(v.data.(number));
   }
-  return &storage{var_fsm["set"], r}
+  return &storage{VAR_SET, r}
 }

@@ -1,7 +1,7 @@
 package main
 
-func push(lexs *Stack, fsm string, data string) {
-	lexs.Push(&storage{var_fsm["fsm"], &lexical{lex_fsm[fsm], data}})
+func push(lexs *Stack, fsm int, data string) {
+	lexs.Push(&storage{VAR_FSM, &lexical{fsm, data}})
 }
 
 func pop(lexs Stack) lexical {
@@ -33,7 +33,8 @@ func is_number(c byte) bool {
 }
 
 func not_opr(c int) bool {
-	return c != var_fsm["number"] && c != var_fsm["set"] && c != var_fsm["addr"] && c != var_fsm["expr"]
+  return c != VAR_NUMBER && c != VAR_SET && c != VAR_EXPR
+	//return c != VAR_NUMBER && c != VAR_SET && c != VAR_ADDR && c != VAR_EXPR
 }
 
 func lex_parse(lines []string) (lex_lines []Stack) {
@@ -59,20 +60,20 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 				}
-				push(&lexs, "str", temp)
+				push(&lexs, LEX_STR, temp)
 			case '=':
 				if line[i+1] == '=' {
-					push(&lexs, "opr", "==")
+					push(&lexs, LEX_OPR, "==")
 					i++
 				} else {
-					push(&lexs, "assign", "=")
+					push(&lexs, LEX_ASSIGN, "=")
 				}
 			case '+', '*', '/', '<', '>':
 				if line[i+1] == '=' {
-					push(&lexs, "opr", string(line[i])+"=")
+					push(&lexs, LEX_OPR, string(line[i])+"=")
 					i++
 				} else {
-					push(&lexs, "opr", string(line[i]))
+					push(&lexs, LEX_OPR, string(line[i]))
 				}
 			case '-':
 				if is_number(line[i+1]) && not_opr(lexs.Top().data.(*lexical).fsm) {
@@ -83,54 +84,54 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, "number", temp)
+					push(&lexs, LEX_NUMBER, temp)
 				} else {
 					if line[i+1] == '=' {
-						push(&lexs, "opr", string(line[i])+"=")
+						push(&lexs, LEX_OPR, string(line[i])+"=")
 						i++
 					} else {
-						push(&lexs, "opr", string(line[i]))
+						push(&lexs, LEX_OPR, string(line[i]))
 					}
 				}
 			case '!':
 				if line[i+1] == '=' {
-					push(&lexs, "opr", "!=")
+					push(&lexs, LEX_OPR, "!=")
 					i++
 				} else {
 					panic("Illegal literal '!'\n")
 				}
 			case '|':
 				if line[i+1] == '|' {
-					push(&lexs, "opr", "||")
+					push(&lexs, LEX_OPR, "||")
 					i++
 				} else {
-					push(&lexs, "opr", "|")
+					push(&lexs, LEX_OPR, "|")
 				}
 			case '&':
 				if line[i+1] == '&' {
-					push(&lexs, "opr", "&&")
+					push(&lexs, LEX_OPR, "&&")
 					i++
 				} else {
 					panic("Illegal literal '&'\n")
 				}
 			case '~':
-				push(&lexs, "func", "~")
+				push(&lexs, LEX_FUNC, "~")
 			case ':':
-				push(&lexs, "namespace", ":")
+				push(&lexs, LEX_FUNC, ":")
 			case ',':
-				push(&lexs, "seperator", ",")
+				push(&lexs, LEX_SEPERATOR, ",")
 			case '(':
-				if top(lexs).fsm == lex_fsm["expr"] {
-					push(&lexs, "call", "(")
+				if top(lexs).fsm == LEX_EXPR {
+					push(&lexs, LEX_CALL, "(")
 				} else {
-					push(&lexs, "bracket", "(")
+					push(&lexs, LEX_BRACKET, "(")
 				}
 			case ')':
-				push(&lexs, "end_bracket", ")")
+				push(&lexs, LEX_END_BRACKET, ")")
 			case '{', '}':
-				push(&lexs, "set", string(line[i]))
+				push(&lexs, LEX_BRACES, string(line[i]))
 			case '[', ']':
-				push(&lexs, "addr", string(line[i]))
+				push(&lexs, LEX_ADDR, string(line[i]))
 			default:
 				if is_expr_letters(line[i]) {
 					temp := string(line[i])
@@ -140,7 +141,7 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, "expr", temp)
+					push(&lexs, LEX_EXPR, temp)
 				}
 				if is_number(line[i]) {
 					temp := string(line[i])
@@ -150,7 +151,7 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, "number", temp)
+					push(&lexs, LEX_NUMBER, temp)
 				}
 			}
 			i++

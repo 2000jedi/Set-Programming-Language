@@ -31,26 +31,26 @@ func segment(line Stack) (prog []storage) {
 	i := 0
 	for i < len(line) {
 		switch getlex(line[i]).fsm {
-		case lex_fsm["expr"], lex_fsm["number"], lex_fsm["str"]:
+		case LEX_EXPR, LEX_NUMBER, LEX_STR:
 			prog = append(prog, *line[i])
-		case lex_fsm["func"]:
+		case LEX_FUNC:
 			prog = append(prog, *line[i])
-		case lex_fsm["bracket"], lex_fsm["call"]:
+		case LEX_BRACKET, LEX_CALL:
 			stack.Push(line[i])
-			if getlex(stack.Top()).fsm == lex_fsm["call"] {
+			if getlex(stack.Top()).fsm == LEX_CALL {
 				prog = append(prog, *stack.Top())
 			}
-		case lex_fsm["addr"]:
+		case LEX_ADDR:
 			prog = append(prog, *line[i])
-		case lex_fsm["end_bracket"]:
-			for !(getlex(stack.Top()).fsm == lex_fsm["bracket"] || getlex(stack.Top()).fsm == lex_fsm["call"]) {
+		case LEX_END_BRACKET:
+			for !(getlex(stack.Top()).fsm == LEX_BRACKET || getlex(stack.Top()).fsm == LEX_CALL) {
 				prog = append(prog, *stack.Pop())
 			}
-			if getlex(stack.Top()).fsm == lex_fsm["call"] {
-				prog = append(prog, storage{var_fsm["fsm"], &lexical{lex_fsm["call"], ")"}})
+			if getlex(stack.Top()).fsm == LEX_CALL {
+				prog = append(prog, storage{VAR_FSM, &lexical{LEX_CALL, ")"}})
 			}
 			stack.Pop()
-		case lex_fsm["brace"]:
+		case LEX_BRACES:
 			switch getlex(line[i]).data {
 			case "{":
 				prog = append(prog, *line[i])
@@ -64,12 +64,12 @@ func segment(line Stack) (prog []storage) {
 			default:
 				panic("Wrong literal " + getlex(line[i]).data + "\n")
 			}
-		case lex_fsm["seperator"]:
+		case LEX_SEPERATOR:
 			prog = append(prog, *line[i])
 			temp_line := Stack{}
 			i++
 			para := 0
-			for !(getlex(line[i]).fsm == lex_fsm["seperator"] || getlex(line[i]).fsm == lex_fsm["vec"] || getlex(line[i]).fsm == lex_fsm["set"]) && (getlex(line[i]).fsm != lex_fsm["end_bracket"] || para != 0) {
+			for !(getlex(line[i]).fsm == LEX_SEPERATOR || getlex(line[i]).fsm == LEX_VEC || getlex(line[i]).fsm == LEX_BRACES) && (getlex(line[i]).fsm != LEX_END_BRACKET || para != 0) {
 				temp_line.Push(line[i])
 				if getlex(line[i]).data == "(" {
 					para++

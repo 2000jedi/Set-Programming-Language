@@ -70,7 +70,7 @@ func div(n, n_ number) (res number) {
 }
 
 func do_func(lambda storage, argc []storage, variable *Variable) *storage {
-	if lambda.vartype == var_fsm["function"] {
+	if lambda.vartype == VAR_FUNCTION {
 		f := lambda.data.(function)
 		return f.function(argc, variable)
 	} else {

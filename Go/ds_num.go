@@ -59,6 +59,6 @@ func (n *number) print() {
 }
 
 func init(){
-  True = storage{var_fsm["number"], number{1, 1}}
-  False = storage{var_fsm["number"], number{0, 0}}
+  True = storage{VAR_NUMBER, number{1, 1}}
+  False = storage{VAR_NUMBER, number{0, 0}}
 }

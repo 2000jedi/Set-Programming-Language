@@ -48,21 +48,21 @@ func (v *Variable) set(name string, val storage) {
 }
 
 func operation(op string, num1, num2 storage) *storage {
-	if num1.vartype == var_fsm["number"] && num2.vartype == var_fsm["number"] {
+	if num1.vartype == VAR_NUMBER && num2.vartype == VAR_NUMBER {
 		var temp number
 		switch op {
 		case "+":
 			temp = add(num1.data.(number), num2.data.(number))
-			return &storage{var_fsm["number"], temp}
+			return &storage{VAR_NUMBER, temp}
 		case "-":
 			temp = sub(num1.data.(number), num2.data.(number))
-			return &storage{var_fsm["number"], temp}
+			return &storage{VAR_NUMBER, temp}
 		case "*":
 			temp = mul(num1.data.(number), num2.data.(number))
-			return &storage{var_fsm["number"], temp}
+			return &storage{VAR_NUMBER, temp}
 		case "/":
 			temp = div(num1.data.(number), num2.data.(number))
-			return &storage{var_fsm["number"], temp}
+			return &storage{VAR_NUMBER, temp}
 		case "==":
 			if equal(num1.data.(number), num2.data.(number)) {
 				return &True
@@ -115,7 +115,7 @@ func operation(op string, num1, num2 storage) *storage {
 			panic("Unknown operator: " + op)
 		}
 	}
-	if num1.vartype == var_fsm["set"] && num2.vartype == var_fsm["number"] {
+	if num1.vartype == VAR_SET && num2.vartype == VAR_NUMBER {
 		var temp set
 		switch op {
 		case "+":
@@ -125,14 +125,14 @@ func operation(op string, num1, num2 storage) *storage {
 			}
 			temp.data = num1.data.(set).data
 			temp.append(num2.data.(number))
-			return &storage{var_fsm["set"], temp}
+			return &storage{VAR_SET, temp}
 		case "-":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
 				temp.data.PushBack(p.Value)
 			}
 			temp.remove(num2.data.(number))
-			return &storage{var_fsm["set"], temp}
+			return &storage{VAR_SET, temp}
 		case "*":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
@@ -142,7 +142,7 @@ func operation(op string, num1, num2 storage) *storage {
 			for p := temp.data.Front(); p != nil; p = p.Next() {
 				p.Value = mul(p.Value.(number), num)
 			}
-			return &storage{var_fsm["set"], temp}
+			return &storage{VAR_SET, temp}
 		case "/":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
@@ -152,7 +152,7 @@ func operation(op string, num1, num2 storage) *storage {
 			for p := temp.data.Front(); p != nil; p = p.Next() {
 				p.Value = div(p.Value.(number), num)
 			}
-			return &storage{var_fsm["set"], temp}
+			return &storage{VAR_SET, temp}
 		default:
 			panic("Unknown operator: " + op)
 		}
@@ -174,36 +174,36 @@ func evaluate(line []storage, variable *Variable) *storage {
 	}
 	for i < len(line) {
 		switch getlex(&line[i]).fsm {
-		case lex_fsm["number"]:
+		case LEX_NUMBER:
 			var n number
 			n.construct(getlex(&line[i]).data)
-			stack.Push(&storage{var_fsm["number"], n})
-		case lex_fsm["str"]:
-			stack.Push(&storage{var_fsm["string"], getlex(&line[i]).data})
-		case lex_fsm["expr"]:
-			stack.Push(&storage{var_fsm["expr"], getlex(&line[i]).data})
-		case lex_fsm["opr"]:
+			stack.Push(&storage{VAR_NUMBER, n})
+		case LEX_STR:
+			stack.Push(&storage{VAR_STRING, getlex(&line[i]).data})
+		case LEX_EXPR:
+			stack.Push(&storage{VAR_EXPR, getlex(&line[i]).data})
+		case LEX_OPR:
 			temp := *stack.Pop()
 			ret := *stack.Pop()
-			if temp.vartype == var_fsm["expr"] {
+			if temp.vartype == VAR_EXPR {
 				temp = variable.get(temp.data.(string))
 			}
-			if ret.vartype == var_fsm["expr"] {
+			if ret.vartype == VAR_EXPR {
 				ret = variable.get(ret.data.(string))
 			}
 			ret_pointer := operation(getlex(&line[i]).data, ret, temp)
 			if ret_pointer != nil {
 				stack.Push(ret_pointer)
 			}
-		case lex_fsm["namespace"]:
+		case LEX_NAMESPACE:
 			temp := *stack.Pop()
 			ret := *stack.Pop()
 			namespace := variable.get(ret.data.(string)).data.(Variable)
 			val := namespace.get(temp.data.(string))
 			stack.Push(&val)
-		case lex_fsm["seperator"]:
+		case LEX_SEPERATOR:
 			stack.Push(&line[i])
-		case lex_fsm["braces"]:
+		case LEX_BRACES:
 			if getlex(&line[i]).data == "{" {
 				is_function := 0
 				var segment_data []storage
@@ -217,58 +217,38 @@ func evaluate(line []storage, variable *Variable) *storage {
 						another_para--
 					}
 					segment_data = append(segment_data, line[i])
-					if getlex(&line[i]).fsm == lex_fsm["func"] {
+					if getlex(&line[i]).fsm == LEX_FUNC {
 						is_function = len(segment_data)
 					}
 					i++
 				}
-				if is_function != 0 {
-					var argv []storage
-					for _, varname := range segment_data[:is_function-1 : 2] {
-						argv = append(argv, storage{var_fsm["expr"], varname.data.(*lexical).data})
-					}
-
-					exprs := segment_data[is_function:]
-					stack.Push(&storage{var_fsm["function"], function{argv, exprs}})
-				} else {
+				if is_function == 0 {
           panic("This method to create set is depreciated. Use set() function instead")
-          /*
-          segment_data = append(segment_data, storage{var_fsm["fsm"], &lexical{lex_fsm["seperator"], ","}})
-					var ret set
-					ret.new()
-					for len(segment_data) != 0 {
-						j := 0
-						for getlex(&segment_data[j]).data != "," {
-							j++
-						}
-						split := segment_data[:j]
-						split_segment := segment_data[j+1:]
-						split_seperated := make([]storage, len(split), len(split))
-						copy(split_seperated, split)
-						segment_data = make([]storage, len(split_segment), len(split_segment))
-						copy(segment_data, split_segment)
-						ret.append(evaluate(split, variable).data.(number))
-					}
-					stack.Push(&storage{var_fsm["set"], ret})
-          */
+        }
+				var argv []storage
+				for _, varname := range segment_data[:is_function-1 : 2] {
+					argv = append(argv, storage{VAR_EXPR, varname.data.(*lexical).data})
 				}
+
+				exprs := segment_data[is_function:]
+				stack.Push(&storage{VAR_FUNCTION, function{argv, exprs}})
 			}
-		case lex_fsm["call"]:
+		case LEX_CALL:
 			var argc []storage
 			if getlex(&line[i]).data == "(" {
 				stack.Push(&line[i])
 			} else {
-				if stack.Top().vartype == var_fsm["fsm"] && getlex(stack.Top()).data == "(" {
+				if stack.Top().vartype == VAR_FSM && getlex(stack.Top()).data == "(" {
 					stack.Pop()
 				} else {
 					argc = append(argc, *stack.Pop())
-					for stack.Len() > 1 && getlex(stack.Top()).fsm != lex_fsm["call"] {
+					for stack.Len() > 1 && getlex(stack.Top()).fsm != LEX_CALL {
 						stack.Pop()
 						argc = append(argc, *stack.Pop())
 					}
 					stack.Pop()
 					for j, _ := range argc {
-						if argc[j].vartype == var_fsm["expr"] {
+						if argc[j].vartype == VAR_EXPR {
 							argc[j] = variable.get(argc[j].data.(string))
 						}
 					}
@@ -283,15 +263,15 @@ func evaluate(line []storage, variable *Variable) *storage {
 					stack.Push(ret)
 				}
 			}
-		case lex_fsm["assign"]:
+		case LEX_ASSIGN:
 			temp := stack.Pop()
-			if temp.vartype == var_fsm["expr"] {
+			if temp.vartype == VAR_EXPR {
 				temp_ := variable.get(temp.data.(string))
 				temp = &temp_
 			}
 			ret := stack.Pop()
 			variable.set(ret.data.(string), *temp)
-		case lex_fsm["addr"]:
+		case LEX_ADDR:
 			if getlex(&line[i]).data == "[" {
 				var addr []storage
 				i++
@@ -302,7 +282,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 				ret := evaluate(addr, variable)
 				arr := variable.get(stack.Pop().data.(string)).data.(array)
 				num := ret.data.(number)
-				stack.Push(&storage{var_fsm["number"], arr.get(num.toInt())})
+				stack.Push(&storage{VAR_NUMBER, arr.get(num.toInt())})
 			}
 		}
 		i++
