@@ -11,7 +11,7 @@ import (
 var debug_flag bool
 
 func interactive() {
-	fmt.Println("SPL 0.1 (build on Go1.8)")
+	fmt.Println("SPL 0.1 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 	reader := bufio.NewReader(os.Stdin)
 
@@ -59,13 +59,16 @@ func help() {
 }
 
 func main() {
-	debug_flag = true
+	debug_flag = false
 	if len(os.Args) == 1 {
 		interactive()
 	} else {
 		if os.Args[1] == "--help" {
 			help()
 		} else {
+			if os.Args[1] == "--debug" {
+				debug_flag = true
+			}
 			runfile(os.Args[1])
 		}
 	}

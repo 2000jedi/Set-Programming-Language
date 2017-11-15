@@ -25,7 +25,7 @@ func is_expr_letters(c byte) bool {
 }
 
 func is_expr_letter_latter(c byte) bool {
-	return '0' <= c && c <= '9'
+	return ('0' <= c && c <= '9') || is_expr_letters(c)
 }
 
 func is_number(c byte) bool {
@@ -116,8 +116,6 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 				}
 			case '~':
 				push(&lexs, LEX_FUNC, "~")
-			case ':':
-				push(&lexs, LEX_NAMESPACE, ":")
 			case ',':
 				push(&lexs, LEX_SEPERATOR, ",")
 			case '(':
@@ -142,8 +140,9 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 					}
 					i--
 					push(&lexs, LEX_EXPR, temp)
-				}
-				if is_number(line[i]) {
+				} else if line[i] == '.' && is_expr_letters(line[i+1]) {
+					push(&lexs, LEX_NAMESPACE, ".")
+				} else if is_number(line[i]) {
 					temp := string(line[i])
 					i++
 					for is_number(line[i]) {
@@ -152,6 +151,8 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 					}
 					i--
 					push(&lexs, LEX_NUMBER, temp)
+				} else {
+					panic(line[i])
 				}
 			}
 			i++

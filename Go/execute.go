@@ -164,6 +164,9 @@ func operation(op string, num1, num2 storage) *storage {
 }
 
 func evaluate(line []storage, variable *Variable) *storage {
+	for _, v := range line {
+		fmt.Println(v.vartype, v.data)
+	}
 	var stack Stack
 	i := 0
 	if !debug_flag {
@@ -255,7 +258,12 @@ func evaluate(line []storage, variable *Variable) *storage {
 						}
 					}
 				}
-				lambda := variable.get(stack.Pop().data.(string))
+				var lambda storage
+				if stack.Top().vartype == VAR_EXPR {
+					lambda = variable.get(stack.Pop().data.(string))
+				} else if stack.Top().vartype == VAR_FUNCTION {
+					lambda = *stack.Pop()
+				}
 				argc_ := make([]storage, len(argc), len(argc))
 				for index, data := range argc {
 					argc_[len(argc)-index-1] = data
@@ -290,11 +298,12 @@ func evaluate(line []storage, variable *Variable) *storage {
 		i++
 	}
 	if stack.Len() != 0 {
-		s := *stack.Top()
+		/*s := *stack.Top()
 		for s.vartype == VAR_EXPR {
 			s = variable.get(s.data.(string))
 		}
-		return &s
+		return &s*/
+		return stack.Top()
 	}
 	return nil
 }

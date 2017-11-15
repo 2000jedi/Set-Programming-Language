@@ -18,7 +18,6 @@ func init() {
 	priority["-"] = 3
 	priority["*"] = 4
 	priority["/"] = 4
-	priority[":"] = 5
 	priority["("] = 0
 }
 
@@ -35,6 +34,13 @@ func segment(line Stack) (prog []storage) {
 			prog = append(prog, *line[i])
 		case LEX_FUNC:
 			prog = append(prog, *line[i])
+		case LEX_NAMESPACE:
+			if getlex(line[i+1]).fsm != LEX_EXPR {
+				panic(line[i+1].data.(string) + " is not an expression")
+			}
+			prog = append(prog, *line[i+1])
+			prog = append(prog, *line[i])
+			i++
 		case LEX_CALL:
 			if stack.Len() > 0 && getlex(stack.Top()).fsm == LEX_NAMESPACE {
 				prog = append(prog, *line[i])
