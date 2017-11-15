@@ -35,16 +35,26 @@ func segment(line Stack) (prog []storage) {
 			prog = append(prog, *line[i])
 		case LEX_FUNC:
 			prog = append(prog, *line[i])
-		case LEX_BRACKET, LEX_CALL:
-			if stack.Len() > 0 && getlex(stack.Top()).fsm == LEX_NAMESPACE && getlex(line[i]).fsm == LEX_CALL {
+		case LEX_CALL:
+			if stack.Len() > 0 && getlex(stack.Top()).fsm == LEX_NAMESPACE {
 				prog = append(prog, *line[i])
 			}
 			stack.Push(line[i])
-			if getlex(stack.Top()).fsm == LEX_CALL {
-				prog = append(prog, *stack.Top())
-			}
+			prog = append(prog, *stack.Top())
 		case LEX_ADDR:
-			prog = append(prog, *line[i])
+			switch getlex(line[i]).data {
+			case "[":
+				prog = append(prog, *line[i])
+				stack.Push(line[i])
+			case "]":
+				for !(getlex(stack.Top()).fsm == LEX_ADDR && getlex(stack.Top()).data == "[") {
+					prog = append(prog, *stack.Pop())
+				}
+				prog = append(prog, storage{VAR_FSM, &lexical{LEX_ADDR, "]"}})
+				stack.Pop()
+			}
+		case LEX_BRACKET:
+			stack.Push(line[i])
 		case LEX_END_BRACKET:
 			for !(getlex(stack.Top()).fsm == LEX_BRACKET || getlex(stack.Top()).fsm == LEX_CALL) {
 				prog = append(prog, *stack.Pop())
