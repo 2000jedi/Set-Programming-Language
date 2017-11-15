@@ -164,9 +164,6 @@ func operation(op string, num1, num2 storage) *storage {
 }
 
 func evaluate(line []storage, variable *Variable) *storage {
-	for _, v := range line {
-		fmt.Println(v.vartype, v.data)
-	}
 	var stack Stack
 	i := 0
 	if !debug_flag {
