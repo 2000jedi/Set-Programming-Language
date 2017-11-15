@@ -33,7 +33,7 @@ func is_number(c byte) bool {
 }
 
 func not_opr(c int) bool {
-  return c != VAR_NUMBER && c != VAR_SET && c != VAR_EXPR
+	return c != VAR_NUMBER && c != VAR_SET && c != VAR_EXPR
 	//return c != VAR_NUMBER && c != VAR_SET && c != VAR_ADDR && c != VAR_EXPR
 }
 
@@ -117,7 +117,7 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 			case '~':
 				push(&lexs, LEX_FUNC, "~")
 			case ':':
-				push(&lexs, LEX_FUNC, ":")
+				push(&lexs, LEX_NAMESPACE, ":")
 			case ',':
 				push(&lexs, LEX_SEPERATOR, ",")
 			case '(':

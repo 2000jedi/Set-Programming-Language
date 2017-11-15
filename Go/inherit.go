@@ -2,14 +2,14 @@ package main
 
 import "fmt"
 
-func invoke_inherit(v *Variable){
-  v.add("println", storage{VAR_C_FUNCTION, inherit{inherit_println}})
+func invoke_inherit(v *Variable) {
+	v.add("println", storage{VAR_C_FUNCTION, inherit{inherit_println}})
 	v.add("print", storage{VAR_C_FUNCTION, inherit{inherit_printf}})
 	v.add("for", storage{VAR_C_FUNCTION, inherit{inherit_for}})
 	v.add("range", storage{VAR_C_FUNCTION, inherit{inherit_range}})
 	v.add("import", storage{VAR_C_FUNCTION, inherit{inherit_import}})
 	v.add("array", storage{VAR_C_FUNCTION, inherit{inherit_gen_array}})
-  v.add("set", storage{VAR_C_FUNCTION, inherit{inherit_gen_set}})
+	v.add("set", storage{VAR_C_FUNCTION, inherit{inherit_gen_set}})
 }
 
 func inherit_printf(data []storage, variable *Variable) *storage {
@@ -109,10 +109,10 @@ func inherit_gen_array(data []storage, variable *Variable) *storage {
 }
 
 func inherit_gen_set(data []storage, variable *Variable) *storage {
-  var r set
-  r.new()
-  for _, v := range data {
-    r.append(v.data.(number));
-  }
-  return &storage{VAR_SET, r}
+	var r set
+	r.new()
+	for _, v := range data {
+		r.append(v.data.(number))
+	}
+	return &storage{VAR_SET, r}
 }

@@ -157,11 +157,18 @@ func operation(op string, num1, num2 storage) *storage {
 			panic("Unknown operator: " + op)
 		}
 	}
-
+	if debug_flag {
+		fmt.Println(num1.vartype, num1.data, num2.vartype, num2.data)
+	}
 	panic("Method not allowed")
 }
 
 func evaluate(line []storage, variable *Variable) *storage {
+	if debug_flag {
+		for _, v := range line {
+			fmt.Println(v.vartype, v.data)
+		}
+	}
 	var stack Stack
 	i := 0
 	if !debug_flag {
@@ -223,8 +230,8 @@ func evaluate(line []storage, variable *Variable) *storage {
 					i++
 				}
 				if is_function == 0 {
-          panic("This method to create set is depreciated. Use set() function instead")
-        }
+					panic("This method to create set is depreciated. Use set() function instead")
+				}
 				var argv []storage
 				for _, varname := range segment_data[:is_function-1 : 2] {
 					argv = append(argv, storage{VAR_EXPR, varname.data.(*lexical).data})
@@ -279,16 +286,20 @@ func evaluate(line []storage, variable *Variable) *storage {
 					addr = append(addr, line[i])
 					i++
 				}
-				ret := evaluate(addr, variable)
+				ret := evaluate(addr, variable).data.(number)
+				loc := ret.toInt()
 				arr := variable.get(stack.Pop().data.(string)).data.(array)
-				num := ret.data.(number)
-				stack.Push(&storage{VAR_NUMBER, arr.get(num.toInt())})
+				stack.Push(&storage{VAR_NUMBER, arr.get(loc)})
 			}
 		}
 		i++
 	}
 	if stack.Len() != 0 {
-		return stack.Top()
+		s := *stack.Top()
+		for s.vartype == VAR_EXPR {
+			s = variable.get(s.data.(string))
+		}
+		return &s
 	}
 	return nil
 }

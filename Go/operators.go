@@ -1,6 +1,6 @@
 package main
 
-func gcd_(a, b int) int {
+func gcd(a, b int) int {
 	for b > 0 {
 		a, b = b, a%b
 	}
@@ -14,9 +14,9 @@ func (self *number) reduce() {
 		}
 		return
 	}
-	gcd := gcd_(self.denominator, self.numerator)
-	self.denominator /= gcd
-	self.numerator /= gcd
+	g := gcd(self.denominator, self.numerator)
+	self.denominator /= g
+	self.numerator /= g
 	if self.denominator < 0 {
 		self.numerator = -self.numerator
 		self.denominator = -self.denominator
@@ -44,15 +44,15 @@ func ge(n, n_ number) bool {
 }
 
 func add(n, n_ number) (res number) {
-	gcd := n.denominator * n_.denominator / gcd_(n.denominator, n_.denominator)
-	res = number{n.numerator*gcd/n.denominator + n_.numerator*gcd/n_.denominator, gcd}
+	g := n.denominator * n_.denominator / gcd(n.denominator, n_.denominator)
+	res = number{n.numerator*g/n.denominator + n_.numerator*g/n_.denominator, g}
 	res.reduce()
 	return
 }
 
 func sub(n, n_ number) (res number) {
-	gcd := n.denominator * n_.denominator / gcd_(n.denominator, n_.denominator)
-	res = number{n.numerator*gcd/n.denominator - n_.numerator*gcd/n_.denominator, gcd}
+	g := n.denominator * n_.denominator / gcd(n.denominator, n_.denominator)
+	res = number{n.numerator*g/n.denominator - n_.numerator*g/n_.denominator, g}
 	res.reduce()
 	return
 }
@@ -73,8 +73,10 @@ func do_func(lambda storage, argc []storage, variable *Variable) *storage {
 	if lambda.vartype == VAR_FUNCTION {
 		f := lambda.data.(function)
 		return f.function(argc, variable)
-	} else {
+	} else if lambda.vartype == VAR_C_FUNCTION {
 		f := lambda.data.(inherit)
 		return f.function(argc, variable)
+	} else {
+		panic("not a function")
 	}
 }

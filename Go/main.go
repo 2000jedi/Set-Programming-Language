@@ -35,6 +35,15 @@ func interactive() {
 			panic("User Exit")
 		}
 		file := strings.Split(text, "\n")
+		if debug_flag {
+			for _, v := range lex_parse(file) {
+				for _, v_ := range v {
+					fmt.Println(v_.vartype, v_.data)
+				}
+				fmt.Println()
+			}
+			fmt.Println("---")
+		}
 		execute(syn_parse(lex_parse(file)), &variable)
 	}
 }

@@ -1,10 +1,10 @@
 package main
 
 import (
-  "fmt"
-  "strings"
-  "strconv"
-  "math"
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
 )
 
 type number struct {
@@ -58,7 +58,7 @@ func (n *number) print() {
 	fmt.Print(n.toString())
 }
 
-func init(){
-  True = storage{VAR_NUMBER, number{1, 1}}
-  False = storage{VAR_NUMBER, number{0, 0}}
+func init() {
+	True = storage{VAR_NUMBER, number{1, 1}}
+	False = storage{VAR_NUMBER, number{0, 0}}
 }

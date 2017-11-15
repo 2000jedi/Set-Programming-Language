@@ -36,6 +36,9 @@ func segment(line Stack) (prog []storage) {
 		case LEX_FUNC:
 			prog = append(prog, *line[i])
 		case LEX_BRACKET, LEX_CALL:
+			if stack.Len() > 0 && getlex(stack.Top()).fsm == LEX_NAMESPACE && getlex(line[i]).fsm == LEX_CALL {
+				prog = append(prog, *line[i])
+			}
 			stack.Push(line[i])
 			if getlex(stack.Top()).fsm == LEX_CALL {
 				prog = append(prog, *stack.Top())
