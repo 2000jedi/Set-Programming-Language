@@ -8,12 +8,7 @@ type Variable struct {
 
 func (v *Variable) init() {
 	v.stack = make(map[string]*Stack)
-	v.add("println", storage{var_fsm["inherit"], inherit{println}})
-	v.add("print", storage{var_fsm["inherit"], inherit{printf}})
-	v.add("for", storage{var_fsm["inherit"], inherit{custom_for}})
-	v.add("range", storage{var_fsm["inherit"], inherit{custom_range}})
-	v.add("import", storage{var_fsm["inherit"], inherit{custom_import}})
-	v.add("array", storage{var_fsm["inherit"], inherit{gen_array}})
+	invoke_inherit(v)
 }
 
 func (v *Variable) add(name string, val storage) {
@@ -208,7 +203,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 			stack.Push(&val)
 		case lex_fsm["seperator"]:
 			stack.Push(&line[i])
-		case lex_fsm["set"]:
+		case lex_fsm["braces"]:
 			if getlex(&line[i]).data == "{" {
 				is_function := 0
 				var segment_data []storage
@@ -236,7 +231,9 @@ func evaluate(line []storage, variable *Variable) *storage {
 					exprs := segment_data[is_function:]
 					stack.Push(&storage{var_fsm["function"], function{argv, exprs}})
 				} else {
-					segment_data = append(segment_data, storage{var_fsm["fsm"], &lexical{lex_fsm["seperator"], ","}})
+          panic("This method to create set is depreciated. Use set() function instead")
+          /*
+          segment_data = append(segment_data, storage{var_fsm["fsm"], &lexical{lex_fsm["seperator"], ","}})
 					var ret set
 					ret.new()
 					for len(segment_data) != 0 {
@@ -253,6 +250,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 						ret.append(evaluate(split, variable).data.(number))
 					}
 					stack.Push(&storage{var_fsm["set"], ret})
+          */
 				}
 			}
 		case lex_fsm["call"]:

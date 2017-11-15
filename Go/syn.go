@@ -50,12 +50,7 @@ func segment(line Stack) (prog []storage) {
 				prog = append(prog, storage{var_fsm["fsm"], &lexical{lex_fsm["call"], ")"}})
 			}
 			stack.Pop()
-		case lex_fsm["end_brace"]:
-			for getlex(stack.Top()).fsm != lex_fsm["addr"] {
-				prog = append(prog, *stack.Pop())
-			}
-			prog = append(prog, *stack.Pop())
-		case lex_fsm["set"]:
+		case lex_fsm["brace"]:
 			switch getlex(line[i]).data {
 			case "{":
 				prog = append(prog, *line[i])

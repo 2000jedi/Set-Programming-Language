@@ -2,7 +2,17 @@ package main
 
 import "fmt"
 
-func printf(data []storage, variable *Variable) *storage {
+func invoke_inherit(v *Variable){
+  v.add("println", storage{var_fsm["c_function"], inherit{inherit_println}})
+	v.add("print", storage{var_fsm["c_function"], inherit{inherit_printf}})
+	v.add("for", storage{var_fsm["c_function"], inherit{inherit_for}})
+	v.add("range", storage{var_fsm["c_function"], inherit{inherit_range}})
+	v.add("import", storage{var_fsm["c_function"], inherit{inherit_import}})
+	v.add("array", storage{var_fsm["c_function"], inherit{inherit_gen_array}})
+  v.add("set", storage{var_fsm["c_function"], inherit{inherit_gen_set}})
+}
+
+func inherit_printf(data []storage, variable *Variable) *storage {
 	for _, val := range data {
 		switch val.vartype {
 		case var_fsm["number"]:
@@ -21,17 +31,17 @@ func printf(data []storage, variable *Variable) *storage {
 	return nil
 }
 
-func println(data []storage, variable *Variable) *storage {
-	printf(data, variable)
+func inherit_println(data []storage, variable *Variable) *storage {
+	inherit_printf(data, variable)
 	fmt.Println()
 	return nil
 }
 
-func custom_for(data []storage, variable *Variable) *storage {
+func inherit_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic("Wrong number of arguments")
 	}
-	if data[0].vartype != var_fsm["set"] || data[1].vartype != var_fsm["number"] {
+	if data[0].vartype != var_fsm["set"] || (data[1].vartype != var_fsm["c_function"] && data[1].vartype != var_fsm["function"]) {
 		panic("Wrong type of arguments")
 	}
 	a := data[0].data.(set).data
@@ -50,7 +60,7 @@ func custom_for(data []storage, variable *Variable) *storage {
 	return &storage{var_fsm["set"], return_set}
 }
 
-func custom_range(data []storage, variable *Variable) *storage {
+func inherit_range(data []storage, variable *Variable) *storage {
 	init := 0
 	end := 0
 	step := 1
@@ -81,7 +91,7 @@ func custom_range(data []storage, variable *Variable) *storage {
 	return &storage{var_fsm["set"], ret}
 }
 
-func custom_import(data []storage, variable *Variable) *storage {
+func inherit_import(data []storage, variable *Variable) *storage {
 	if len(data) > 1 {
 		panic("Wrong number of arguments")
 	}
@@ -89,11 +99,20 @@ func custom_import(data []storage, variable *Variable) *storage {
 	return &storage{var_fsm["namespace"], var_}
 }
 
-func gen_array(data []storage, variable *Variable) *storage {
-	var temp array
-	temp.new()
-	for _, data := range data {
-		temp.append(data.data.(number))
+func inherit_gen_array(data []storage, variable *Variable) *storage {
+	var r array
+	r.new()
+	for _, v := range data {
+		r.append(v.data.(number))
 	}
-	return &storage{var_fsm["array"], temp}
+	return &storage{var_fsm["array"], r}
+}
+
+func inherit_gen_set(data []storage, variable *Variable) *storage {
+  var r set
+  r.new()
+  for _, v := range data {
+    r.append(v.data.(number));
+  }
+  return &storage{var_fsm["set"], r}
 }
