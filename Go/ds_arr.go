@@ -63,3 +63,12 @@ func (s *array) toString() (ret string) {
 	}
 	return
 }
+
+func array_gen(data []storage, variable *Variable) *storage {
+	var r array
+	r.new()
+	for _, v := range data {
+		r.append(v.data.(number))
+	}
+	return &storage{VAR_ARRAY, r}
+}

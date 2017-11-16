@@ -2,17 +2,17 @@ package main
 
 import "fmt"
 
-func invoke_inherit(v *Variable) {
-	v.add("println", storage{VAR_C_FUNCTION, inherit{inherit_println}})
-	v.add("print", storage{VAR_C_FUNCTION, inherit{inherit_printf}})
-	v.add("for", storage{VAR_C_FUNCTION, inherit{inherit_for}})
-	v.add("range", storage{VAR_C_FUNCTION, inherit{inherit_range}})
-	v.add("import", storage{VAR_C_FUNCTION, inherit{inherit_import}})
-	v.add("array", storage{VAR_C_FUNCTION, inherit{inherit_gen_array}})
-	v.add("set", storage{VAR_C_FUNCTION, inherit{inherit_gen_set}})
+func invoke_builtin(v *Variable) {
+	v.add("println", storage{VAR_C_FUNCTION, c_function{builtin_println}})
+	v.add("print", storage{VAR_C_FUNCTION, c_function{builtin_printf}})
+	v.add("for", storage{VAR_C_FUNCTION, c_function{builtin_for}})
+	v.add("range", storage{VAR_C_FUNCTION, c_function{builtin_range}})
+	v.add("import", storage{VAR_C_FUNCTION, c_function{builtin_import}})
+	v.add("array", storage{VAR_C_FUNCTION, c_function{array_gen}})
+	v.add("set", storage{VAR_C_FUNCTION, c_function{set_gen}})
 }
 
-func inherit_printf(data []storage, variable *Variable) *storage {
+func builtin_printf(data []storage, variable *Variable) *storage {
 	for _, val := range data {
 		switch val.vartype {
 		case VAR_NUMBER:
@@ -31,13 +31,36 @@ func inherit_printf(data []storage, variable *Variable) *storage {
 	return nil
 }
 
-func inherit_println(data []storage, variable *Variable) *storage {
-	inherit_printf(data, variable)
+func builtin_println(data []storage, variable *Variable) *storage {
+	builtin_printf(data, variable)
 	fmt.Println()
 	return nil
 }
 
-func inherit_for(data []storage, variable *Variable) *storage {
+func builtin_if(data []storage, variable *Variable) *storage {
+	if len(data) > 3 || len(data) < 2 {
+		panic("Wrong number of arguments")
+	}
+  if len(data) == 2 {
+    cond := data[0].data.(number) != False // Judge whether the condition is true
+    branch_then := data[1]
+    if (cond) {
+      return do_func(branch_then, []storage{}, variable)
+    }
+  } else {
+    cond := data[0].data.(number) != False
+    branch_then := data[1]
+    branch_else := data[2]
+    if (cond) {
+      return do_func(branch_then, []storage{}, variable)
+    } else {
+      return do_func(branch_else, []storage{}, variable)
+    }
+  }
+  return nil
+}
+
+func builtin_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic("Wrong number of arguments")
 	}
@@ -60,7 +83,7 @@ func inherit_for(data []storage, variable *Variable) *storage {
 	return &storage{VAR_SET, return_set}
 }
 
-func inherit_range(data []storage, variable *Variable) *storage {
+func builtin_range(data []storage, variable *Variable) *storage {
 	init := 0
 	end := 0
 	step := 1
@@ -91,28 +114,10 @@ func inherit_range(data []storage, variable *Variable) *storage {
 	return &storage{VAR_SET, ret}
 }
 
-func inherit_import(data []storage, variable *Variable) *storage {
+func builtin_import(data []storage, variable *Variable) *storage {
 	if len(data) > 1 {
 		panic("Wrong number of arguments")
 	}
 	var_ := runfile(data[0].data.(string) + ".sp")
 	return &storage{VAR_NAMESPACE, var_}
-}
-
-func inherit_gen_array(data []storage, variable *Variable) *storage {
-	var r array
-	r.new()
-	for _, v := range data {
-		r.append(v.data.(number))
-	}
-	return &storage{VAR_ARRAY, r}
-}
-
-func inherit_gen_set(data []storage, variable *Variable) *storage {
-	var r set
-	r.new()
-	for _, v := range data {
-		r.append(v.data.(number))
-	}
-	return &storage{VAR_SET, r}
 }

@@ -32,9 +32,9 @@ func (s *set) remove(n number) bool {
 func (s *set) append(n number) {
 	flag := true
 	for p := s.data.Front(); p != nil; p = p.Next() {
-		if !lt(p.Value.(number), n) {
+		if lt(p.Value.(number), n) == False {
 			flag = false
-			if !equal(p.Value.(number), n) {
+			if equal(p.Value.(number), n) == False {
 				s.data.InsertBefore(n, p)
 				return
 			} else {
@@ -60,4 +60,13 @@ func (s *set) toString() (ret string) {
 		}
 	}
 	return
+}
+
+func set_gen(data []storage, variable *Variable) *storage {
+	var r set
+	r.new()
+	for _, v := range data {
+		r.append(v.data.(number))
+	}
+	return &storage{VAR_SET, r}
 }

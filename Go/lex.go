@@ -61,6 +61,19 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 					}
 				}
 				push(&lexs, LEX_STR, temp)
+			case '\'':
+				temp := ""
+				i++
+				for line[i] != '\'' {
+					if line[i] == '\\' {
+						temp += process_escapes(string(line[i]) + string(line[i+1]))
+						i += 2
+					} else {
+						temp += string(line[i])
+						i++
+					}
+				}
+				push(&lexs, LEX_STR, temp)
 			case '=':
 				if line[i+1] == '=' {
 					push(&lexs, LEX_OPR, "==")
@@ -114,8 +127,8 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 				} else {
 					panic("Illegal literal '&'\n")
 				}
-			case '~':
-				push(&lexs, LEX_FUNC, "~")
+			case ':':
+				push(&lexs, LEX_FUNC, ":")
 			case ',':
 				push(&lexs, LEX_SEPERATOR, ",")
 			case '(':

@@ -16,6 +16,18 @@ func (f *function) function(vals []storage, variable *Variable) (ret_val *storag
 	return
 }
 
-type inherit struct {
+type c_function struct {
 	function func(data []storage, variable *Variable) *storage
+}
+
+func do_func(lambda storage, argc []storage, variable *Variable) *storage {
+	if lambda.vartype == VAR_FUNCTION {
+		f := lambda.data.(function)
+		return f.function(argc, variable)
+	} else if lambda.vartype == VAR_C_FUNCTION {
+		f := lambda.data.(c_function)
+		return f.function(argc, variable)
+	} else {
+		panic("not a function")
+	}
 }

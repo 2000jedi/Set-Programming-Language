@@ -8,7 +8,7 @@ type Variable struct {
 
 func (v *Variable) init() {
 	v.stack = make(map[string]*Stack)
-	invoke_inherit(v)
+	invoke_builtin(v)
 }
 
 func (v *Variable) add(name string, val storage) {
@@ -64,53 +64,33 @@ func operation(op string, num1, num2 storage) *storage {
 			temp = div(num1.data.(number), num2.data.(number))
 			return &storage{VAR_NUMBER, temp}
 		case "==":
-			if equal(num1.data.(number), num2.data.(number)) {
-				return &True
-			} else {
-				return &False
-			}
+			return &storage{VAR_NUMBER, equal(num1.data.(number), num2.data.(number))}
 		case ">":
-			if gt(num1.data.(number), num2.data.(number)) {
-				return &True
-			} else {
-				return &False
-			}
+      return &storage{VAR_NUMBER, gt(num1.data.(number), num2.data.(number))}
 		case ">=":
-			if ge(num1.data.(number), num2.data.(number)) {
-				return &True
-			} else {
-				return &False
-			}
+      return &storage{VAR_NUMBER, ge(num1.data.(number), num2.data.(number))}
 		case "<":
-			if lt(num1.data.(number), num2.data.(number)) {
-				return &True
-			} else {
-				return &False
-			}
+      return &storage{VAR_NUMBER, lt(num1.data.(number), num2.data.(number))}
 		case "<=":
-			if le(num1.data.(number), num2.data.(number)) {
-				return &True
-			} else {
-				return &False
-			}
+      return &storage{VAR_NUMBER, le(num1.data.(number), num2.data.(number))}
 		case "!=":
-			if equal(num1.data.(number), num2.data.(number)) {
-				return &False
+      if equal(num1.data.(number), num2.data.(number)) == True {
+				return &storage{VAR_NUMBER, False}
 			} else {
-				return &True
+				return &storage{VAR_NUMBER, True}
 			}
 		case "+=":
 			num1.data = add(num1.data.(number), num2.data.(number))
-			return nil
+			return &num1
 		case "-=":
 			num1.data = sub(num1.data.(number), num2.data.(number))
-			return nil
+			return &num1
 		case "*=":
 			num1.data = mul(num1.data.(number), num2.data.(number))
-			return nil
+			return &num1
 		case "/=":
 			num1.data = div(num1.data.(number), num2.data.(number))
-			return nil
+			return &num1
 		default:
 			panic("Unknown operator: " + op)
 		}
