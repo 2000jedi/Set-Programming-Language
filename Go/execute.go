@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Variable struct {
 	stack map[string]*Stack
@@ -66,15 +68,15 @@ func operation(op string, num1, num2 storage) *storage {
 		case "==":
 			return &storage{VAR_NUMBER, equal(num1.data.(number), num2.data.(number))}
 		case ">":
-      return &storage{VAR_NUMBER, gt(num1.data.(number), num2.data.(number))}
+			return &storage{VAR_NUMBER, gt(num1.data.(number), num2.data.(number))}
 		case ">=":
-      return &storage{VAR_NUMBER, ge(num1.data.(number), num2.data.(number))}
+			return &storage{VAR_NUMBER, ge(num1.data.(number), num2.data.(number))}
 		case "<":
-      return &storage{VAR_NUMBER, lt(num1.data.(number), num2.data.(number))}
+			return &storage{VAR_NUMBER, lt(num1.data.(number), num2.data.(number))}
 		case "<=":
-      return &storage{VAR_NUMBER, le(num1.data.(number), num2.data.(number))}
+			return &storage{VAR_NUMBER, le(num1.data.(number), num2.data.(number))}
 		case "!=":
-      if equal(num1.data.(number), num2.data.(number)) == True {
+			if equal(num1.data.(number), num2.data.(number)) == True {
 				return &storage{VAR_NUMBER, False}
 			} else {
 				return &storage{VAR_NUMBER, True}
@@ -134,13 +136,13 @@ func operation(op string, num1, num2 storage) *storage {
 			}
 			return &storage{VAR_SET, temp}
 		default:
-			panic("Unknown operator: " + op)
+			panic("unknown operator: " + op)
 		}
 	}
 	if debug_flag {
 		fmt.Println(num1.vartype, num1.data, num2.vartype, num2.data)
 	}
-	panic("Method not allowed")
+	panic("method not allowed")
 }
 
 func evaluate(line []storage, variable *Variable) *storage {
@@ -163,16 +165,10 @@ func evaluate(line []storage, variable *Variable) *storage {
 		case LEX_STR:
 			stack.Push(&storage{VAR_STRING, getlex(&line[i]).data})
 		case LEX_EXPR:
-			stack.Push(&storage{VAR_EXPR, getlex(&line[i]).data})
+			stack.Push(&storage{VAR_VAR, getlex(&line[i]).data})
 		case LEX_OPR:
-			temp := *stack.Pop()
-			ret := *stack.Pop()
-			if temp.vartype == VAR_EXPR {
-				temp = variable.get(temp.data.(string))
-			}
-			if ret.vartype == VAR_EXPR {
-				ret = variable.get(ret.data.(string))
-			}
+			temp := *stack.DeVarPop(variable)
+			ret := *stack.DeVarPop(variable)
 			ret_pointer := operation(getlex(&line[i]).data, ret, temp)
 			if ret_pointer != nil {
 				stack.Push(ret_pointer)
@@ -205,11 +201,12 @@ func evaluate(line []storage, variable *Variable) *storage {
 					i++
 				}
 				if is_function == 0 {
-					panic("This method to create set is depreciated. Use set() function instead")
+					is_function = 1
+					segment_data = append([]storage{{VAR_FSM, lexical{LEX_FUNC, ""}}}, segment_data...)
 				}
 				var argv []storage
 				for _, varname := range segment_data[:is_function-1 : 2] {
-					argv = append(argv, storage{VAR_EXPR, varname.data.(*lexical).data})
+					argv = append(argv, storage{VAR_VAR, varname.data.(*lexical).data})
 				}
 
 				exprs := segment_data[is_function:]
@@ -223,24 +220,15 @@ func evaluate(line []storage, variable *Variable) *storage {
 				if stack.Top().vartype == VAR_FSM && getlex(stack.Top()).data == "(" {
 					stack.Pop()
 				} else {
-					argc = append(argc, *stack.Pop())
+					argc = append(argc, *stack.DeVarPop(variable))
 					for stack.Len() > 1 && getlex(stack.Top()).fsm != LEX_CALL {
 						stack.Pop()
-						argc = append(argc, *stack.Pop())
+						argc = append(argc, *stack.DeVarPop(variable))
 					}
 					stack.Pop()
-					for j, _ := range argc {
-						if argc[j].vartype == VAR_EXPR {
-							argc[j] = variable.get(argc[j].data.(string))
-						}
-					}
 				}
 				var lambda storage
-				if stack.Top().vartype == VAR_EXPR {
-					lambda = variable.get(stack.Pop().data.(string))
-				} else if stack.Top().vartype == VAR_FUNCTION {
-					lambda = *stack.Pop()
-				}
+				lambda = *stack.DeVarPop(variable)
 				argc_ := make([]storage, len(argc), len(argc))
 				for index, data := range argc {
 					argc_[len(argc)-index-1] = data
@@ -251,11 +239,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 				}
 			}
 		case LEX_ASSIGN:
-			temp := stack.Pop()
-			if temp.vartype == VAR_EXPR {
-				temp_ := variable.get(temp.data.(string))
-				temp = &temp_
-			}
+			temp := stack.DeVarPop(variable)
 			ret := stack.Pop()
 			variable.set(ret.data.(string), *temp)
 		case LEX_ADDR:
@@ -275,11 +259,6 @@ func evaluate(line []storage, variable *Variable) *storage {
 		i++
 	}
 	if stack.Len() != 0 {
-		/*s := *stack.Top()
-		for s.vartype == VAR_EXPR {
-			s = variable.get(s.data.(string))
-		}
-		return &s*/
 		return stack.Top()
 	}
 	return nil

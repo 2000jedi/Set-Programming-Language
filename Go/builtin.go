@@ -5,6 +5,7 @@ import "fmt"
 func invoke_builtin(v *Variable) {
 	v.add("println", storage{VAR_C_FUNCTION, c_function{builtin_println}})
 	v.add("print", storage{VAR_C_FUNCTION, c_function{builtin_printf}})
+	v.add("if", storage{VAR_C_FUNCTION, c_function{builtin_if}})
 	v.add("for", storage{VAR_C_FUNCTION, c_function{builtin_for}})
 	v.add("range", storage{VAR_C_FUNCTION, c_function{builtin_range}})
 	v.add("import", storage{VAR_C_FUNCTION, c_function{builtin_import}})
@@ -41,23 +42,22 @@ func builtin_if(data []storage, variable *Variable) *storage {
 	if len(data) > 3 || len(data) < 2 {
 		panic("Wrong number of arguments")
 	}
-  if len(data) == 2 {
-    cond := data[0].data.(number) != False // Judge whether the condition is true
-    branch_then := data[1]
-    if (cond) {
-      return do_func(branch_then, []storage{}, variable)
-    }
-  } else {
-    cond := data[0].data.(number) != False
-    branch_then := data[1]
-    branch_else := data[2]
-    if (cond) {
-      return do_func(branch_then, []storage{}, variable)
-    } else {
-      return do_func(branch_else, []storage{}, variable)
-    }
-  }
-  return nil
+	cond := do_func(data[0], []storage{}, variable).data.(number) != False // Judge whether the condition is true
+	if len(data) == 2 {
+		branch_then := data[1]
+		if cond {
+			return do_func(branch_then, []storage{}, variable)
+		}
+	} else {
+		branch_then := data[1]
+		branch_else := data[2]
+		if cond {
+			return do_func(branch_then, []storage{}, variable)
+		} else {
+			return do_func(branch_else, []storage{}, variable)
+		}
+	}
+	return nil
 }
 
 func builtin_for(data []storage, variable *Variable) *storage {

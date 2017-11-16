@@ -33,7 +33,7 @@ func is_number(c byte) bool {
 }
 
 func not_opr(c int) bool {
-	return c != VAR_NUMBER && c != VAR_SET && c != VAR_EXPR
+	return c != VAR_NUMBER && c != VAR_SET && c != VAR_VAR
 	//return c != VAR_NUMBER && c != VAR_SET && c != VAR_ADDR && c != VAR_EXPR
 }
 
