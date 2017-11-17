@@ -164,7 +164,7 @@ func operation(op string, num1, num2 storage) *storage {
 	panic("method not allowed: " + fmt.Sprint(num1.vartype, num1.data, num2.vartype, num2.data))
 }
 
-func evaluate(line []storage, variable *Variable) *storage {
+func evaluate(line []lexical, variable *Variable) *storage {
 	var stack Stack
 	i := 0
 	if !debug_flag {
@@ -176,21 +176,21 @@ func evaluate(line []storage, variable *Variable) *storage {
 		}()
 	}
 	for i < len(line) {
-		switch getlex(&line[i]).fsm {
+		switch line[i].fsm {
 		case LEX_NUMBER:
 			var n number
-			n.construct(getlex(&line[i]).data)
+			n.construct(line[i].data)
 			stack.Push(&storage{VAR_NUMBER, n})
 		case LEX_STR:
 			var str ds_string
-			str.fromString(getlex(&line[i]).data)
+			str.fromString(line[i].data)
 			stack.Push(&storage{VAR_STRING, str})
 		case LEX_EXPR:
-			stack.Push(&storage{VAR_VAR, Var(getlex(&line[i]).data)})
+			stack.Push(&storage{VAR_VAR, Var(line[i].data)})
 		case LEX_OPR:
 			temp := *stack.DeVarPop(variable)
 			ret := *stack.DeVarPop(variable)
-			ret_pointer := operation(getlex(&line[i]).data, ret, temp)
+			ret_pointer := operation(line[i].data, ret, temp)
 			if ret_pointer != nil {
 				stack.Push(ret_pointer)
 			}
@@ -201,33 +201,33 @@ func evaluate(line []storage, variable *Variable) *storage {
 			val := class.get(temp.data.(Var))
 			stack.Push(&val)
 		case LEX_SEPERATOR:
-			stack.Push(&line[i])
+			stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
 		case LEX_BRACES:
-			if getlex(&line[i]).data == "{" {
+			if line[i].data == "{" {
 				is_function := 0
-				var segment_data []storage
+				var segment_data []lexical
 				i++
 				another_para := 0
-				for getlex(&line[i]).data != "}" || another_para != 0 {
-					if getlex(&line[i]).data == "{" {
+				for line[i].data != "}" || another_para != 0 {
+					if line[i].data == "{" {
 						another_para++
 					}
-					if getlex(&line[i]).data == "}" {
+					if line[i].data == "}" {
 						another_para--
 					}
 					segment_data = append(segment_data, line[i])
-					if getlex(&line[i]).fsm == LEX_FUNC {
+					if line[i].fsm == LEX_FUNC {
 						is_function = len(segment_data)
 					}
 					i++
 				}
 				if is_function == 0 {
 					is_function = 1
-					segment_data = append([]storage{{VAR_FSM, lexical{LEX_FUNC, ""}}}, segment_data...)
+					segment_data = append([]lexical{{LEX_FUNC, ""}}, segment_data...)
 				}
 				var argv []storage
 				for _, varname := range segment_data[:is_function-1 : 2] {
-					argv = append(argv, storage{VAR_VAR, Var(varname.data.(*lexical).data)})
+					argv = append(argv, storage{VAR_VAR, Var(varname.data)})
 				}
 
 				exprs := segment_data[is_function:]
@@ -235,14 +235,14 @@ func evaluate(line []storage, variable *Variable) *storage {
 			}
 		case LEX_CALL:
 			var argc []storage
-			if getlex(&line[i]).data == "(" {
-				stack.Push(&line[i])
+			if line[i].data == "(" {
+				stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
 			} else {
-				if stack.Top().vartype == VAR_FSM && getlex(stack.Top()).data == "(" {
+				if stack.Top().vartype == VAR_FSM && stack.Top().data.toString() == "(" {
 					stack.Pop()
 				} else {
 					argc = append(argc, *stack.DeVarPop(variable))
-					for stack.Len() > 1 && getlex(stack.Top()).fsm != LEX_CALL {
+					for stack.Len() > 1 && stack.Top().data.toString() != "(" { // TODO: improvement
 						stack.Pop()
 						argc = append(argc, *stack.DeVarPop(variable))
 					}
@@ -265,10 +265,10 @@ func evaluate(line []storage, variable *Variable) *storage {
 			variable.set(ret.data.(Var), *temp)
 			stack.Push(temp)
 		case LEX_ADDR:
-			if getlex(&line[i]).data == "[" {
-				var addr []storage
+			if line[i].data == "[" {
+				var addr []lexical
 				i++
-				for getlex(&line[i]).data != "]" {
+				for line[i].data != "]" {
 					addr = append(addr, line[i])
 					i++
 				}
@@ -286,7 +286,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 	return nil
 }
 
-func execute(lines [][]storage, variable *Variable) {
+func execute(lines [][]lexical, variable *Variable) {
 	for _, line := range lines {
 		evaluate(line, variable)
 	}

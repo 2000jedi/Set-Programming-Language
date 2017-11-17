@@ -2,7 +2,7 @@ package main
 
 type function struct {
 	argv  []storage
-	exprs []storage
+	exprs []lexical
 }
 
 func (f *function) function(vals []storage, variable *Variable) (ret_val *storage) {

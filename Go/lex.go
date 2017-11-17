@@ -1,17 +1,5 @@
 package main
 
-func push(lexs *Stack, fsm int, data string) {
-	lexs.Push(&storage{VAR_FSM, &lexical{fsm, data}})
-}
-
-func pop(lexs Stack) lexical {
-	return *lexs.Pop().data.(*lexical)
-}
-
-func top(lexs Stack) lexical {
-	return *lexs.Top().data.(*lexical)
-}
-
 func process_escapes(s string) string {
 	if s == "\\n" {
 		return "\n"
@@ -37,9 +25,9 @@ func not_opr(c int) bool {
 	//return c != VAR_NUMBER && c != VAR_SET && c != VAR_ADDR && c != VAR_EXPR
 }
 
-func lex_parse(lines []string) (lex_lines []Stack) {
+func lex_parse(lines []string) (lex_lines []Lexs) {
 	for _, line := range lines {
-		var lexs Stack
+		var lexs Lexs
 		line = line + " "
 		i := 0
 		for i < len(line) {
@@ -60,7 +48,7 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 				}
-				push(&lexs, LEX_STR, temp)
+				lexs.Push(lexical{LEX_STR, temp})
 			case '\'':
 				temp := ""
 				i++
@@ -73,23 +61,23 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 				}
-				push(&lexs, LEX_STR, temp)
+				lexs.Push(lexical{LEX_STR, temp})
 			case '=':
 				if line[i+1] == '=' {
-					push(&lexs, LEX_OPR, "==")
+					lexs.Push(lexical{LEX_OPR, "=="})
 					i++
 				} else {
-					push(&lexs, LEX_ASSIGN, "=")
+					lexs.Push(lexical{LEX_ASSIGN, "="})
 				}
 			case '+', '*', '/', '<', '>':
 				if line[i+1] == '=' {
-					push(&lexs, LEX_OPR, string(line[i])+"=")
+					lexs.Push(lexical{LEX_OPR, string(line[i]) + "="})
 					i++
 				} else {
-					push(&lexs, LEX_OPR, string(line[i]))
+					lexs.Push(lexical{LEX_OPR, string(line[i])})
 				}
 			case '-':
-				if is_number(line[i+1]) && not_opr(lexs.Top().data.(*lexical).fsm) {
+				if is_number(line[i+1]) && not_opr(lexs.Top().fsm) {
 					temp := string(line[i])
 					i++
 					for is_number(line[i]) {
@@ -97,52 +85,52 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, LEX_NUMBER, temp)
+					lexs.Push(lexical{LEX_NUMBER, temp})
 				} else {
 					if line[i+1] == '=' {
-						push(&lexs, LEX_OPR, string(line[i])+"=")
+						lexs.Push(lexical{LEX_OPR, string(line[i]) + "="})
 						i++
 					} else {
-						push(&lexs, LEX_OPR, string(line[i]))
+						lexs.Push(lexical{LEX_OPR, string(line[i])})
 					}
 				}
 			case '!':
 				if line[i+1] == '=' {
-					push(&lexs, LEX_OPR, "!=")
+					lexs.Push(lexical{LEX_OPR, "!="})
 					i++
 				} else {
 					panic("Illegal literal '!'\n")
 				}
 			case '|':
 				if line[i+1] == '|' {
-					push(&lexs, LEX_OPR, "||")
+					lexs.Push(lexical{LEX_OPR, "||"})
 					i++
 				} else {
-					push(&lexs, LEX_OPR, "|")
+					lexs.Push(lexical{LEX_OPR, "|"})
 				}
 			case '&':
 				if line[i+1] == '&' {
-					push(&lexs, LEX_OPR, "&&")
+					lexs.Push(lexical{LEX_OPR, "&&"})
 					i++
 				} else {
 					panic("Illegal literal '&'\n")
 				}
 			case ':':
-				push(&lexs, LEX_FUNC, ":")
+				lexs.Push(lexical{LEX_FUNC, ":"})
 			case ',':
-				push(&lexs, LEX_SEPERATOR, ",")
+				lexs.Push(lexical{LEX_SEPERATOR, ","})
 			case '(':
-				if top(lexs).fsm == LEX_EXPR {
-					push(&lexs, LEX_CALL, "(")
+				if lexs.Top().fsm == LEX_EXPR {
+					lexs.Push(lexical{LEX_CALL, "("})
 				} else {
-					push(&lexs, LEX_BRACKET, "(")
+					lexs.Push(lexical{LEX_BRACKET, "("})
 				}
 			case ')':
-				push(&lexs, LEX_END_BRACKET, ")")
+				lexs.Push(lexical{LEX_END_BRACKET, ")"})
 			case '{', '}':
-				push(&lexs, LEX_BRACES, string(line[i]))
+				lexs.Push(lexical{LEX_BRACES, string(line[i])})
 			case '[', ']':
-				push(&lexs, LEX_ADDR, string(line[i]))
+				lexs.Push(lexical{LEX_ADDR, string(line[i])})
 			default:
 				if is_expr_letters(line[i]) {
 					temp := string(line[i])
@@ -152,9 +140,9 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, LEX_EXPR, temp)
+					lexs.Push(lexical{LEX_EXPR, temp})
 				} else if line[i] == '.' && is_expr_letters(line[i+1]) {
-					push(&lexs, LEX_NAMESPACE, ".")
+					lexs.Push(lexical{LEX_NAMESPACE, "."})
 				} else if is_number(line[i]) {
 					temp := string(line[i])
 					i++
@@ -163,7 +151,7 @@ func lex_parse(lines []string) (lex_lines []Stack) {
 						i++
 					}
 					i--
-					push(&lexs, LEX_NUMBER, temp)
+					lexs.Push(lexical{LEX_NUMBER, temp})
 				} else {
 					panic(line[i])
 				}

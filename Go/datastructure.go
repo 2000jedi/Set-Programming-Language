@@ -12,7 +12,7 @@ type storage struct {
 }
 
 func (s storage) toString() string {
-	return fmt.Sprint(s.vartype, s.data)
+	return fmt.Sprint(s.vartype, " ", s.data)
 }
 
 type lexical struct {
@@ -65,6 +65,27 @@ func (q *Stack) DeVarTop(variable *Variable) *storage {
 
 func (q *Stack) Len() int {
 	return len(*q)
+}
+
+type Lexs []lexical
+
+func (q Lexs) Len() int {
+	return len(q)
+}
+
+func (q *Lexs) Push(n lexical) {
+	*q = append(*q, n)
+}
+
+func (q *Lexs) Pop() (n lexical) {
+	x := q.Len() - 1
+	n = (*q)[x]
+	*q = (*q)[:x]
+	return
+}
+
+func (q Lexs) Top() lexical {
+	return q[q.Len()-1]
 }
 
 const (
