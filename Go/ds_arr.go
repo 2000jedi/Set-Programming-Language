@@ -1,12 +1,14 @@
 package main
 
-import "container/list"
+import (
+	"container/list"
+)
 
 type array struct {
 	data *list.List
 }
 
-func (s *array) get(n int) number {
+func (s array) get(n int) (ret *storage) {
 	p := s.data.Front()
 	for ; n > 0; p = p.Next() {
 		if p == nil {
@@ -17,12 +19,13 @@ func (s *array) get(n int) number {
 	if p == nil {
 		panic("Index out of range")
 	}
-	return p.Value.(number)
+	*ret = p.Value.(storage)
+	return ret
 }
 
-func (s *array) find(n number) bool {
+func (s array) find(n storage) bool {
 	for e := s.data.Front(); e != nil; e = e.Next() {
-		if e.Value == n {
+		if e.Value.(storage) == n {
 			return true
 		}
 	}
@@ -46,19 +49,19 @@ func (s *array) remove(i int) {
 	s.data.Remove(p)
 }
 
-func (s *array) append(n number) {
+func (s *array) append(n storage) {
 	s.data.PushBack(n)
 }
 
-func (s *array) toString() (ret string) {
+func (s array) toString() (ret string) {
 	ret = "["
-	var temp number
+	var temp storage
 	for p := s.data.Front(); p != nil; p = p.Next() {
-		temp = p.Value.(number)
+		temp = p.Value.(storage)
 		if p.Next() != nil {
-			ret += temp.toString() + ", "
+			ret += temp.data.toString() + ", "
 		} else {
-			ret += temp.toString() + "]"
+			ret += temp.data.toString() + "]"
 		}
 	}
 	return
@@ -68,7 +71,7 @@ func array_gen(data []storage, variable *Variable) *storage {
 	var r array
 	r.new()
 	for _, v := range data {
-		r.append(v.data.(number))
+		r.append(v)
 	}
 	return &storage{VAR_ARRAY, r}
 }

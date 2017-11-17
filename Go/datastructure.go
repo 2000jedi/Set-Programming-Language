@@ -6,12 +6,22 @@ import (
 
 type storage struct {
 	vartype int
-	data    interface{}
+	data    interface {
+		toString() string
+	}
+}
+
+func (s storage) toString() string {
+	return fmt.Sprint(s.vartype, s.data)
 }
 
 type lexical struct {
 	fsm  int
 	data string
+}
+
+func (l lexical) toString() string {
+	return fmt.Sprintf("(%d,%s)\n", l.fsm, l.data)
 }
 
 func (l lexical) print() {
@@ -40,7 +50,7 @@ func (q *Stack) DeVarPop(variable *Variable) *storage {
 	n := *(*q)[x]
 	*q = (*q)[:x]
 	for n.vartype == VAR_VAR {
-		n = variable.get(n.data.(string))
+		n = variable.get(n.data.(Var))
 	}
 	return &n
 }
@@ -48,7 +58,7 @@ func (q *Stack) DeVarPop(variable *Variable) *storage {
 func (q *Stack) DeVarTop(variable *Variable) *storage {
 	n := *(*q)[q.Len()-1]
 	for n.vartype == VAR_VAR {
-		n = variable.get(n.data.(string))
+		n = variable.get(n.data.(Var))
 	}
 	return &n
 }

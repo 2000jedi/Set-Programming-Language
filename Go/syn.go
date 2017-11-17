@@ -36,7 +36,7 @@ func segment(line Stack) (prog []storage) {
 			prog = append(prog, *line[i])
 		case LEX_NAMESPACE:
 			if getlex(line[i+1]).fsm != LEX_EXPR {
-				panic(line[i+1].data.(string) + " is not an expression")
+				panic(line[i+1].data.toString() + " is not an expression")
 			}
 			prog = append(prog, *line[i+1])
 			prog = append(prog, *line[i])

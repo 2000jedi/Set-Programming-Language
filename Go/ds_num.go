@@ -42,7 +42,7 @@ func (n *number) construct(v string) {
 	n.reduce()
 }
 
-func (n *number) toString() string {
+func (n number) toString() string {
 	if n.denominator == 1 {
 		return fmt.Sprint(n.numerator)
 	} else {

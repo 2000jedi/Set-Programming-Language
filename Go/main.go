@@ -59,7 +59,7 @@ func help() {
 }
 
 func main() {
-	debug_flag = true
+	debug_flag = false
 	if len(os.Args) == 1 {
 		interactive()
 	} else {

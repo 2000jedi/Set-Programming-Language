@@ -4,16 +4,26 @@ import (
 	"fmt"
 )
 
+type Var string
+
+func (v Var) toString() string {
+	return string(v)
+}
+
 type Variable struct {
-	stack map[string]*Stack
+	stack map[Var]*Stack
 }
 
 func (v *Variable) init() {
-	v.stack = make(map[string]*Stack)
+	v.stack = make(map[Var]*Stack)
 	invoke_builtin(v)
 }
 
-func (v *Variable) add(name string, val storage) {
+func (v Variable) toString() string {
+	return fmt.Sprint(v.stack)
+}
+
+func (v *Variable) add(name Var, val storage) {
 	if _, ok := v.stack[name]; ok {
 		v.stack[name].Push(&val)
 	} else {
@@ -21,7 +31,7 @@ func (v *Variable) add(name string, val storage) {
 	}
 }
 
-func (v *Variable) get(name string) (val storage) {
+func (v Variable) get(name Var) (val storage) {
 	if _, ok := v.stack[name]; ok {
 		val = *v.stack[name].Top()
 	} else {
@@ -30,7 +40,7 @@ func (v *Variable) get(name string) (val storage) {
 	return
 }
 
-func (v *Variable) del(name string) {
+func (v *Variable) del(name Var) {
 	if _, ok := v.stack[name]; ok {
 		v.stack[name].Pop()
 	} else {
@@ -38,7 +48,7 @@ func (v *Variable) del(name string) {
 	}
 }
 
-func (v *Variable) set(name string, val storage) {
+func (v *Variable) set(name Var, val storage) {
 	if _, ok := v.stack[name]; ok {
 		if v.stack[name].Len() > 0 {
 			v.stack[name].Pop()
@@ -172,9 +182,11 @@ func evaluate(line []storage, variable *Variable) *storage {
 			n.construct(getlex(&line[i]).data)
 			stack.Push(&storage{VAR_NUMBER, n})
 		case LEX_STR:
-			stack.Push(&storage{VAR_STRING, getlex(&line[i]).data})
+			var str ds_string
+			str.fromString(getlex(&line[i]).data)
+			stack.Push(&storage{VAR_STRING, str})
 		case LEX_EXPR:
-			stack.Push(&storage{VAR_VAR, getlex(&line[i]).data})
+			stack.Push(&storage{VAR_VAR, Var(getlex(&line[i]).data)})
 		case LEX_OPR:
 			temp := *stack.DeVarPop(variable)
 			ret := *stack.DeVarPop(variable)
@@ -186,7 +198,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 			temp := *stack.Pop()
 			ret := *stack.DeVarPop(variable)
 			class := ret.data.(Variable)
-			val := class.get(temp.data.(string))
+			val := class.get(temp.data.(Var))
 			stack.Push(&val)
 		case LEX_SEPERATOR:
 			stack.Push(&line[i])
@@ -215,7 +227,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 				}
 				var argv []storage
 				for _, varname := range segment_data[:is_function-1 : 2] {
-					argv = append(argv, storage{VAR_VAR, varname.data.(*lexical).data})
+					argv = append(argv, storage{VAR_VAR, Var(varname.data.(*lexical).data)})
 				}
 
 				exprs := segment_data[is_function:]
@@ -250,7 +262,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 		case LEX_ASSIGN:
 			temp := stack.DeVarPop(variable)
 			ret := stack.Pop()
-			variable.set(ret.data.(string), *temp)
+			variable.set(ret.data.(Var), *temp)
 		case LEX_ADDR:
 			if getlex(&line[i]).data == "[" {
 				var addr []storage
@@ -261,8 +273,8 @@ func evaluate(line []storage, variable *Variable) *storage {
 				}
 				ret := evaluate(addr, variable).data.(number)
 				loc := ret.toInt()
-				arr := variable.get(stack.Pop().data.(string)).data.(array)
-				stack.Push(&storage{VAR_NUMBER, arr.get(loc)})
+				arr := variable.get(stack.Pop().data.(Var)).data.(array)
+				stack.Push(arr.get(loc))
 			}
 		}
 		i++

@@ -6,7 +6,7 @@ type set struct {
 	data *list.List
 }
 
-func (s *set) find(n number) bool {
+func (s set) find(n number) bool {
 	for e := s.data.Front(); e != nil; e = e.Next() {
 		if e.Value == n {
 			return true
@@ -48,7 +48,7 @@ func (s *set) append(n number) {
 	}
 }
 
-func (s *set) toString() (ret string) {
+func (s set) toString() (ret string) {
 	ret = "{"
 	var temp number
 	for p := s.data.Front(); p != nil; p = p.Next() {

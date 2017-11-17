@@ -15,34 +15,10 @@ func invoke_builtin(v *Variable) {
 
 func builtin_printf(data []storage, variable *Variable) *storage {
 	for k, v := range data {
-		switch v.vartype {
-		case VAR_NUMBER:
-			num := v.data.(number)
-			if k != len(data)-1 {
-				fmt.Print(num.toString(), " ")
-			} else {
-				fmt.Print(num.toString())
-			}
-		case VAR_SET:
-			num := v.data.(set)
-			if k != len(data)-1 {
-				fmt.Print(num.toString(), " ")
-			} else {
-				fmt.Print(num.toString())
-			}
-		case VAR_ARRAY:
-			num := v.data.(array)
-			if k != len(data)-1 {
-				fmt.Print(num.toString(), " ")
-			} else {
-				fmt.Print(num.toString())
-			}
-		default:
-			if k != len(data)-1 {
-				fmt.Print(v.data, " ")
-			} else {
-				fmt.Print(v.data)
-			}
+		if k != len(data)-1 {
+			fmt.Print(v.data.toString(), " ")
+		} else {
+			fmt.Print(v.data.toString())
 		}
 	}
 	return nil
@@ -56,9 +32,9 @@ func builtin_println(data []storage, variable *Variable) *storage {
 
 func builtin_if(data []storage, variable *Variable) *storage {
 	if len(data) > 3 || len(data) < 2 {
-		panic("Wrong number of arguments")
+		panic(ERR_ARG_NUM)
 	}
-	cond := data[0].data.(number) != False // Judge whether the condition is true
+	cond := data[0].data.(number) != False
 	if len(data) == 2 {
 		branch_then := data[1]
 		if cond {
@@ -78,10 +54,10 @@ func builtin_if(data []storage, variable *Variable) *storage {
 
 func builtin_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
-		panic("Wrong number of arguments")
+		panic(ERR_ARG_NUM)
 	}
 	if data[0].vartype != VAR_SET || (data[1].vartype != VAR_C_FUNCTION && data[1].vartype != VAR_FUNCTION) {
-		panic("Wrong type of arguments")
+		panic(ERR_ARG_TYPE)
 	}
 	a := data[0].data.(set).data
 	b := data[1]
@@ -120,7 +96,7 @@ func builtin_range(data []storage, variable *Variable) *storage {
 		temp = data[2].data.(number)
 		step = temp.toInt()
 	default:
-		panic("Wrong number of arguments")
+		panic(ERR_ARG_NUM)
 	}
 	var ret set
 	ret.new()
@@ -132,8 +108,13 @@ func builtin_range(data []storage, variable *Variable) *storage {
 
 func builtin_import(data []storage, variable *Variable) *storage {
 	if len(data) > 1 {
-		panic("Wrong number of arguments")
+		panic(ERR_ARG_NUM)
 	}
-	var_ := runfile(data[0].data.(string))
+	var_ := runfile(data[0].data.toString())
 	return &storage{VAR_CLASS, var_}
 }
+
+const (
+	ERR_ARG_NUM  = "wrong number of arguments"
+	ERR_ARG_TYPE = "wrong type of arguments"
+)
