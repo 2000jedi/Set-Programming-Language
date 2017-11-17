@@ -80,7 +80,7 @@ func segment(line Lexs) (prog []lexical) {
 				panic("Wrong literal " + line[i].data + "\n")
 			}
 		case LEX_SEPERATOR:
-			for !(stack.Top().fsm == LEX_BRACKET || stack.Top().fsm == LEX_CALL) {
+			for stack.Len() > 0 && !(stack.Top().fsm == LEX_BRACKET || stack.Top().fsm == LEX_CALL) {
 				prog = append(prog, stack.Pop())
 			}
 			prog = append(prog, line[i])

@@ -68,8 +68,10 @@ func main() {
 		} else {
 			if os.Args[1] == "--debug" {
 				debug_flag = true
+				interactive()
+			} else {
+				runfile(os.Args[1])
 			}
-			runfile(os.Args[1])
 		}
 	}
 }
