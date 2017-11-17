@@ -263,6 +263,7 @@ func evaluate(line []storage, variable *Variable) *storage {
 			temp := stack.DeVarPop(variable)
 			ret := stack.Pop()
 			variable.set(ret.data.(Var), *temp)
+			stack.Push(temp)
 		case LEX_ADDR:
 			if getlex(&line[i]).data == "[" {
 				var addr []storage
