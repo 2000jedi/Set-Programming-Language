@@ -84,24 +84,10 @@ func segment(line Stack) (prog []storage) {
 				panic("Wrong literal " + getlex(line[i]).data + "\n")
 			}
 		case LEX_SEPERATOR:
+			for !(getlex(stack.Top()).fsm == LEX_BRACKET || getlex(stack.Top()).fsm == LEX_CALL) {
+				prog = append(prog, *stack.Pop())
+			}
 			prog = append(prog, *line[i])
-			temp_line := Stack{}
-			i++
-			para := 0
-			for !(getlex(line[i]).fsm == LEX_SEPERATOR || getlex(line[i]).fsm == LEX_VEC || getlex(line[i]).fsm == LEX_BRACES) && (getlex(line[i]).fsm != LEX_END_BRACKET || para != 0) {
-				temp_line.Push(line[i])
-				if getlex(line[i]).data == "(" {
-					para++
-				}
-				if getlex(line[i]).data == ")" {
-					para--
-				}
-				i++
-			}
-			i--
-			for _, t := range segment(temp_line) {
-				prog = append(prog, t)
-			}
 		default:
 			if stack.Len() == 0 || priority[getlex(stack.Top()).data] < priority[getlex(line[i]).data] {
 				stack.Push(line[i])
