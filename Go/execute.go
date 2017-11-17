@@ -51,20 +51,15 @@ func (v *Variable) set(name string, val storage) {
 
 func operation(op string, num1, num2 storage) *storage {
 	if num1.vartype == VAR_NUMBER && num2.vartype == VAR_NUMBER {
-		var temp number
 		switch op {
 		case "+":
-			temp = add(num1.data.(number), num2.data.(number))
-			return &storage{VAR_NUMBER, temp}
+			return &storage{VAR_NUMBER, add(num1.data.(number), num2.data.(number))}
 		case "-":
-			temp = sub(num1.data.(number), num2.data.(number))
-			return &storage{VAR_NUMBER, temp}
+			return &storage{VAR_NUMBER, sub(num1.data.(number), num2.data.(number))}
 		case "*":
-			temp = mul(num1.data.(number), num2.data.(number))
-			return &storage{VAR_NUMBER, temp}
+			return &storage{VAR_NUMBER, mul(num1.data.(number), num2.data.(number))}
 		case "/":
-			temp = div(num1.data.(number), num2.data.(number))
-			return &storage{VAR_NUMBER, temp}
+			return &storage{VAR_NUMBER, div(num1.data.(number), num2.data.(number))}
 		case "==":
 			return &storage{VAR_NUMBER, equal(num1.data.(number), num2.data.(number))}
 		case ">":
@@ -94,7 +89,7 @@ func operation(op string, num1, num2 storage) *storage {
 			num1.data = div(num1.data.(number), num2.data.(number))
 			return &num1
 		default:
-			panic("Unknown operator: " + op)
+			panic("unknown operator for NUMBER and NUMBER: " + op)
 		}
 	}
 	if num1.vartype == VAR_SET && num2.vartype == VAR_NUMBER {
@@ -103,46 +98,60 @@ func operation(op string, num1, num2 storage) *storage {
 		case "+":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
-				temp.data.PushBack(p.Value)
+				temp.data.PushBack(add(p.Value.(number), num2.data.(number)))
 			}
-			temp.data = num1.data.(set).data
-			temp.append(num2.data.(number))
 			return &storage{VAR_SET, temp}
+		case "+=":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(add(p.Value.(number), num2.data.(number)))
+			}
+			*num1.data.(set).data = *temp.data
+			return &storage{VAR_SET, num1}
 		case "-":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
-				temp.data.PushBack(p.Value)
+				temp.data.PushBack(sub(p.Value.(number), num2.data.(number)))
 			}
-			temp.remove(num2.data.(number))
 			return &storage{VAR_SET, temp}
+		case "-=":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(sub(p.Value.(number), num2.data.(number)))
+			}
+			*num1.data.(set).data = *temp.data
+			return &storage{VAR_SET, num1}
 		case "*":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
-				temp.data.PushBack(p.Value)
-			}
-			num := num2.data.(number)
-			for p := temp.data.Front(); p != nil; p = p.Next() {
-				p.Value = mul(p.Value.(number), num)
+				temp.data.PushBack(mul(p.Value.(number), num2.data.(number)))
 			}
 			return &storage{VAR_SET, temp}
+		case "*=":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(mul(p.Value.(number), num2.data.(number)))
+			}
+			*num1.data.(set).data = *temp.data
+			return &storage{VAR_SET, num1}
 		case "/":
 			temp.new()
 			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
-				temp.data.PushBack(p.Value)
-			}
-			num := num2.data.(number)
-			for p := temp.data.Front(); p != nil; p = p.Next() {
-				p.Value = div(p.Value.(number), num)
+				temp.data.PushBack(div(p.Value.(number), num2.data.(number)))
 			}
 			return &storage{VAR_SET, temp}
+		case "/=":
+			temp.new()
+			for p := num1.data.(set).data.Front(); p != nil; p = p.Next() {
+				temp.data.PushBack(div(p.Value.(number), num2.data.(number)))
+			}
+			*num1.data.(set).data = *temp.data
+			return &storage{VAR_SET, num1}
 		default:
-			panic("unknown operator: " + op)
+			panic("unknown operator for SET and NUMBER: " + op)
 		}
 	}
-	if debug_flag {
-		fmt.Println(num1.vartype, num1.data, num2.vartype, num2.data)
-	}
-	panic("method not allowed")
+	panic("method not allowed: " + fmt.Sprint(num1.vartype, num1.data, num2.vartype, num2.data))
 }
 
 func evaluate(line []storage, variable *Variable) *storage {
@@ -175,9 +184,9 @@ func evaluate(line []storage, variable *Variable) *storage {
 			}
 		case LEX_NAMESPACE:
 			temp := *stack.Pop()
-			ret := *stack.Pop()
-			namespace := variable.get(ret.data.(string)).data.(Variable)
-			val := namespace.get(temp.data.(string))
+			ret := *stack.DeVarPop(variable)
+			class := ret.data.(Variable)
+			val := class.get(temp.data.(string))
 			stack.Push(&val)
 		case LEX_SEPERATOR:
 			stack.Push(&line[i])

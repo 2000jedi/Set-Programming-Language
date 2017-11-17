@@ -11,7 +11,7 @@ import (
 var debug_flag bool
 
 func interactive() {
-	fmt.Println("SPL 0.1 (build on Go 1.9)")
+	fmt.Println("SPL 17.11.17 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 	reader := bufio.NewReader(os.Stdin)
 

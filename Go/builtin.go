@@ -14,19 +14,35 @@ func invoke_builtin(v *Variable) {
 }
 
 func builtin_printf(data []storage, variable *Variable) *storage {
-	for _, val := range data {
-		switch val.vartype {
+	for k, v := range data {
+		switch v.vartype {
 		case VAR_NUMBER:
-			num := val.data.(number)
-			fmt.Print(num.toString())
+			num := v.data.(number)
+			if k != len(data)-1 {
+				fmt.Print(num.toString(), " ")
+			} else {
+				fmt.Print(num.toString())
+			}
 		case VAR_SET:
-			num := val.data.(set)
-			fmt.Print(num.toString())
+			num := v.data.(set)
+			if k != len(data)-1 {
+				fmt.Print(num.toString(), " ")
+			} else {
+				fmt.Print(num.toString())
+			}
 		case VAR_ARRAY:
-			num := val.data.(array)
-			fmt.Print(num.toString())
+			num := v.data.(array)
+			if k != len(data)-1 {
+				fmt.Print(num.toString(), " ")
+			} else {
+				fmt.Print(num.toString())
+			}
 		default:
-			fmt.Print(val.data)
+			if k != len(data)-1 {
+				fmt.Print(v.data, " ")
+			} else {
+				fmt.Print(v.data)
+			}
 		}
 	}
 	return nil
@@ -118,6 +134,6 @@ func builtin_import(data []storage, variable *Variable) *storage {
 	if len(data) > 1 {
 		panic("Wrong number of arguments")
 	}
-	var_ := runfile(data[0].data.(string) + ".sp")
-	return &storage{VAR_NAMESPACE, var_}
+	var_ := runfile(data[0].data.(string))
+	return &storage{VAR_CLASS, var_}
 }

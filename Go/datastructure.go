@@ -66,7 +66,7 @@ const (
 	VAR_C_FUNCTION
 	VAR_SET
 	VAR_ARRAY
-	VAR_NAMESPACE
+	VAR_CLASS
 )
 
 const (
