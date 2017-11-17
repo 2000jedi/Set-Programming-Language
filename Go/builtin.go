@@ -42,7 +42,7 @@ func builtin_if(data []storage, variable *Variable) *storage {
 	if len(data) > 3 || len(data) < 2 {
 		panic("Wrong number of arguments")
 	}
-	cond := do_func(data[0], []storage{}, variable).data.(number) != False // Judge whether the condition is true
+	cond := data[0].data.(number) != False // Judge whether the condition is true
 	if len(data) == 2 {
 		branch_then := data[1]
 		if cond {
