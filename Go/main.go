@@ -28,7 +28,6 @@ func interactive() {
 		Prompt:            ">>> ",
 		HistoryFile:       "/tmp/spl.tmp",
 		InterruptPrompt:   "^C",
-		EOFPrompt:         "exit()",
 		HistorySearchFold: true,
 	})
 	if err != nil {

@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func invoke_builtin(v *Variable) {
 	v.add("println", storage{VAR_C_FUNCTION, c_function{builtin_println}})
@@ -11,6 +14,7 @@ func invoke_builtin(v *Variable) {
 	v.add("import", storage{VAR_C_FUNCTION, c_function{builtin_import}})
 	v.add("array", storage{VAR_C_FUNCTION, c_function{array_gen}})
 	v.add("set", storage{VAR_C_FUNCTION, c_function{set_gen}})
+	v.add("exit", storage{VAR_C_FUNCTION, c_function{builtin_exit}})
 }
 
 func builtin_printf(data []storage, variable *Variable) *storage {
@@ -52,6 +56,11 @@ func builtin_if(data []storage, variable *Variable) *storage {
 	return nil
 }
 
+func builtin_for_subroutine(f storage, stg []storage, v Variable, c chan *storage) {
+	ret := do_func(f, stg, &v)
+	c <- ret
+}
+
 func builtin_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic(ERR_ARG_NUM)
@@ -64,10 +73,15 @@ func builtin_for(data []storage, variable *Variable) *storage {
 
 	return_set := set{}
 	return_set.new()
+	c := make(chan *storage)
 	for p := a.Front(); p != nil; p = p.Next() {
 		var stg []storage
 		stg = append(stg, storage{VAR_NUMBER, p.Value.(number)})
-		ret := do_func(b, stg, variable)
+		go builtin_for_subroutine(b, stg, *variable, c)
+	}
+	var ret *storage
+	for p := a.Front(); p != nil; p = p.Next() {
+		ret = <-c
 		if ret != nil {
 			return_set.append(ret.data.(number))
 		}
@@ -112,6 +126,11 @@ func builtin_import(data []storage, variable *Variable) *storage {
 	}
 	var_ := runfile(data[0].data.toString())
 	return &storage{VAR_CLASS, var_}
+}
+
+func builtin_exit(data []storage, variable *Variable) *storage {
+	os.Exit(0)
+	return nil
 }
 
 const (
