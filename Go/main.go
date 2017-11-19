@@ -1,11 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/chzyer/readline"
 )
 
 var debug_flag bool
@@ -13,7 +15,6 @@ var debug_flag bool
 func interactive() {
 	fmt.Println("SPL 17.11.17 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
-	reader := bufio.NewReader(os.Stdin)
 
 	if !debug_flag {
 		defer func() {
@@ -22,17 +23,34 @@ func interactive() {
 			}
 		}()
 	}
+
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:            ">>> ",
+		HistoryFile:       "/tmp/spl.tmp",
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit()",
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+
 	var variable Variable
 	variable.init()
-	for {
-		fmt.Print(">>> ")
-		text, err := reader.ReadString('\n')
-		if err != nil {
-			panic(err)
-		}
 
-		if text == "exit()\n" {
-			panic("User Exit")
+	for {
+		text, err := l.Readline()
+		if err == readline.ErrInterrupt {
+			if len(text) == 0 {
+				break
+			} else {
+				continue
+			}
+		} else if err == io.EOF {
+			break
+		} else if err != nil {
+			panic(err)
 		}
 		file := strings.Split(text, "\n")
 		execute(syn_parse(lex_parse(file)), &variable)
