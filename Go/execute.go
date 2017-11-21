@@ -167,14 +167,16 @@ func operation(op string, num1, num2 storage) *storage {
 func evaluate(line []lexical, variable *Variable) *storage {
 	var stack Stack
 	i := 0
-	if !*debug_flag {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println(r)
-				fmt.Printf("\033[0m\n")
-			}
-		}()
-	}
+	/*
+		if !*debug_flag {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Println(r)
+					fmt.Printf("\033[0m\n")
+				}
+			}()
+		}
+	*/
 	for i < len(line) {
 		switch line[i].fsm {
 		case LEX_NUMBER:

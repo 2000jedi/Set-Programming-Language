@@ -18,14 +18,6 @@ func interactive() {
 	fmt.Println("SPL 17.11.17 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 
-	if !*debug_flag {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println(r)
-			}
-		}()
-	}
-
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:            ">>> ",
 		HistoryFile:       "/tmp/spl.tmp",
@@ -71,6 +63,13 @@ func runfile(s string) Variable {
 }
 
 func main() {
+	if !*debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(r)
+			}
+		}()
+	}
 	if *addr == "" {
 		interactive()
 	} else {
