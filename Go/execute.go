@@ -167,7 +167,7 @@ func operation(op string, num1, num2 storage) *storage {
 func evaluate(line []lexical, variable *Variable) *storage {
 	var stack Stack
 	i := 0
-	if !debug_flag {
+	if !*debug_flag {
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println(r)

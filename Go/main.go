@@ -1,22 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"strings"
 
 	"github.com/chzyer/readline"
 )
 
-var debug_flag bool
+var debug_flag *bool
+var help_flag *bool
+var addr *string
 
 func interactive() {
 	fmt.Println("SPL 17.11.17 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 
-	if !debug_flag {
+	if !*debug_flag {
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println(r)
@@ -68,27 +70,18 @@ func runfile(s string) Variable {
 	return variable
 }
 
-func help() {
-	fmt.Println("Help of SPL:")
-	fmt.Println("Specify a filename or use interactive shell")
-	fmt.Println("Example:")
-	fmt.Println("spl debug.sp")
-}
-
 func main() {
-	debug_flag = false
-	if len(os.Args) == 1 {
+	if *addr == "" {
 		interactive()
 	} else {
-		if os.Args[1] == "--help" {
-			help()
-		} else {
-			if os.Args[1] == "--debug" {
-				debug_flag = true
-				interactive()
-			} else {
-				runfile(os.Args[1])
-			}
-		}
+		runfile(*addr)
 	}
+
+}
+
+func init() {
+	// define & parse flags
+	debug_flag = flag.Bool("debug", false, "Enable Debug Mode")
+	addr = flag.String("d", "", "Execute a file")
+	flag.Parse()
 }
