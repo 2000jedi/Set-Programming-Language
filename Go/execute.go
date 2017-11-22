@@ -4,60 +4,7 @@ import (
 	"fmt"
 )
 
-type Var string
-
-func (v Var) toString() string {
-	return string(v)
-}
-
-type Variable struct {
-	stack map[Var]*Stack
-}
-
-func (v *Variable) init() {
-	v.stack = make(map[Var]*Stack)
-	invoke_builtin(v)
-}
-
-func (v Variable) toString() string {
-	return fmt.Sprint(v.stack)
-}
-
-func (v *Variable) add(name Var, val storage) {
-	if _, ok := v.stack[name]; ok {
-		v.stack[name].Push(&val)
-	} else {
-		v.stack[name] = &Stack{&val}
-	}
-}
-
-func (v Variable) get(name Var) (val storage) {
-	if _, ok := v.stack[name]; ok {
-		val = *v.stack[name].Top()
-	} else {
-		panic("Variable Undefined: " + name)
-	}
-	return
-}
-
-func (v *Variable) del(name Var) {
-	if _, ok := v.stack[name]; ok {
-		v.stack[name].Pop()
-	} else {
-		panic("Variable Undefined: " + name)
-	}
-}
-
-func (v *Variable) set(name Var, val storage) {
-	if _, ok := v.stack[name]; ok {
-		if v.stack[name].Len() > 0 {
-			v.stack[name].Pop()
-		}
-		v.stack[name].Push(&val)
-	} else {
-		v.stack[name] = &Stack{&val}
-	}
-}
+var stackTrace []string
 
 func operation(op string, num1, num2 storage) *storage {
 	if num1.vartype == VAR_NUMBER && num2.vartype == VAR_NUMBER {
@@ -165,18 +112,21 @@ func operation(op string, num1, num2 storage) *storage {
 }
 
 func evaluate(line []lexical, variable *Variable) *storage {
+	if !*debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("\nTraceback: ")
+				for _, v := range stackTrace {
+					fmt.Printf("    %s\n", v)
+				}
+				fmt.Println(r)
+				fmt.Printf("\033[0m\n")
+			}
+		}()
+	}
+
 	var stack Stack
 	i := 0
-	/*
-		if !*debug_flag {
-			defer func() {
-				if r := recover(); r != nil {
-					fmt.Println(r)
-					fmt.Printf("\033[0m\n")
-				}
-			}()
-		}
-	*/
 	for i < len(line) {
 		switch line[i].fsm {
 		case LEX_NUMBER:
@@ -289,7 +239,8 @@ func evaluate(line []lexical, variable *Variable) *storage {
 }
 
 func execute(lines [][]lexical, variable *Variable) {
-	for _, line := range lines {
+	for k, line := range lines {
+		stackTrace = []string{fmt.Sprintf("In line %d: ", k)}
 		evaluate(line, variable)
 	}
 }

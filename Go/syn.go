@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 var priority map[string]int
 
 func init() {
@@ -22,6 +24,13 @@ func init() {
 }
 
 func segment(line Lexs) (prog []lexical) {
+	if !*debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(r)
+			}
+		}()
+	}
 	var stack Lexs
 	i := 0
 	for i < len(line) {

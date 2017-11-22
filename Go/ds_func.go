@@ -28,16 +28,21 @@ func (f c_function) toString() string {
 	panic(ERR_FUNC_PRINT)
 }
 
-func do_func(lambda storage, argc []storage, variable *Variable) *storage {
+func do_func(lambda storage, argc []storage, variable *Variable) (s *storage) {
 	if lambda.vartype == VAR_FUNCTION {
 		f := lambda.data.(function)
-		return f.function(argc, variable)
+		stackTrace = append(stackTrace, "In function")
+		s = f.function(argc, variable)
+		stackTrace = stackTrace[:len(stackTrace)-1]
 	} else if lambda.vartype == VAR_C_FUNCTION {
 		f := lambda.data.(c_function)
-		return f.function(argc, variable)
+		stackTrace = append(stackTrace, "In function:")
+		s = f.function(argc, variable)
+		stackTrace = stackTrace[:len(stackTrace)-1]
 	} else {
 		panic(ERR_NOT_FUNC)
 	}
+	return
 }
 
 const (

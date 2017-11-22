@@ -88,6 +88,61 @@ func (q Lexs) Top() lexical {
 	return q[q.Len()-1]
 }
 
+type Var string
+
+func (v Var) toString() string {
+	return string(v)
+}
+
+type Variable struct {
+	stack map[Var]*Stack
+}
+
+func (v *Variable) init() {
+	v.stack = make(map[Var]*Stack)
+	invoke_builtin(v)
+}
+
+func (v Variable) toString() string {
+	return fmt.Sprint(v.stack)
+}
+
+func (v *Variable) add(name Var, val storage) {
+	if _, ok := v.stack[name]; ok {
+		v.stack[name].Push(&val)
+	} else {
+		v.stack[name] = &Stack{&val}
+	}
+}
+
+func (v Variable) get(name Var) (val storage) {
+	if _, ok := v.stack[name]; ok {
+		val = *v.stack[name].Top()
+	} else {
+		panic("Variable Undefined: " + name)
+	}
+	return
+}
+
+func (v *Variable) del(name Var) {
+	if _, ok := v.stack[name]; ok {
+		v.stack[name].Pop()
+	} else {
+		panic("Variable Undefined: " + name)
+	}
+}
+
+func (v *Variable) set(name Var, val storage) {
+	if _, ok := v.stack[name]; ok {
+		if v.stack[name].Len() > 0 {
+			v.stack[name].Pop()
+		}
+		v.stack[name].Push(&val)
+	} else {
+		v.stack[name] = &Stack{&val}
+	}
+}
+
 const (
 	VAR_NUMBER int = iota
 	VAR_STRING

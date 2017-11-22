@@ -63,13 +63,6 @@ func runfile(s string) Variable {
 }
 
 func main() {
-	if !*debug_flag {
-		defer func() {
-			if r := recover(); r != nil {
-				fmt.Println(r)
-			}
-		}()
-	}
 	if *addr == "" {
 		interactive()
 	} else {

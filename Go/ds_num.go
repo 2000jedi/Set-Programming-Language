@@ -89,28 +89,28 @@ func equal(n, n_ number) number {
 }
 
 func lt(n, n_ number) number {
-	if n.numerator*1.0/n.denominator < n_.numerator*1.0/n.denominator {
+	if n.numerator*1.0/n.denominator < n_.numerator*1.0/n_.denominator {
 		return True
 	}
 	return False
 }
 
 func le(n, n_ number) number {
-	if n.numerator*1.0/n.denominator <= n_.numerator*1.0/n.denominator {
+	if n.numerator*1.0/n.denominator <= n_.numerator*1.0/n_.denominator {
 		return True
 	}
 	return False
 }
 
 func gt(n, n_ number) number {
-	if n.numerator*1.0/n.denominator > n_.numerator*1.0/n.denominator {
+	if n.numerator*1.0/n.denominator > n_.numerator*1.0/n_.denominator {
 		return True
 	}
 	return False
 }
 
 func ge(n, n_ number) number {
-	if n.numerator*1.0/n.denominator >= n_.numerator*1.0/n.denominator {
+	if n.numerator*1.0/n.denominator >= n_.numerator*1.0/n_.denominator {
 		return True
 	}
 	return False

@@ -56,11 +56,6 @@ func builtin_if(data []storage, variable *Variable) *storage {
 	return nil
 }
 
-func builtin_for_subroutine(f storage, stg []storage, v Variable, c chan *storage) {
-	ret := do_func(f, stg, &v)
-	c <- ret
-}
-
 func builtin_for(data []storage, variable *Variable) *storage {
 	if len(data) > 2 {
 		panic(ERR_ARG_NUM)
@@ -73,18 +68,10 @@ func builtin_for(data []storage, variable *Variable) *storage {
 
 	return_set := set{}
 	return_set.new()
-	c := make(chan *storage)
 	for p := a.Front(); p != nil; p = p.Next() {
 		var stg []storage
 		stg = append(stg, storage{VAR_NUMBER, p.Value.(number)})
-		go builtin_for_subroutine(b, stg, *variable, c)
-	}
-	var ret *storage
-	for p := a.Front(); p != nil; p = p.Next() {
-		ret = <-c
-		if ret != nil {
-			return_set.append(ret.data.(number))
-		}
+		return_set.append(do_func(b, stg, variable).data.(number))
 	}
 	return &storage{VAR_SET, return_set}
 }

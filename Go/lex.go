@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func process_escapes(s string) string {
 	if s == "\\n" {
 		return "\n"
@@ -26,6 +28,13 @@ func not_opr(c int) bool {
 }
 
 func lex_parse(lines []string) (lex_lines []Lexs) {
+	if !*debug_flag {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println(r)
+			}
+		}()
+	}
 	for _, line := range lines {
 		var lexs Lexs
 		line = line + " "
