@@ -162,8 +162,11 @@ func evaluate(line []lexical, variable *Variable) *storage {
 				panic(err)
 			}
 			class := ret.data.(Variable)
-			val := class.get(temp.data.(Var))
-			stack.Push(&val)
+			val, err := class.get(temp.data.(Var))
+			if err != nil {
+				panic(err)
+			}
+			stack.Push(val)
 		case LEX_SEPERATOR:
 			stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
 		case LEX_BRACES:

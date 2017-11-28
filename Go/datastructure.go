@@ -66,12 +66,15 @@ func (q *Stack) DeVarPop(variable *Variable) (n *storage, err error) {
 		err = errors.New("empty stack")
 		return
 	}
-	n_ := *(*q)[x]
+	n = (*q)[x]
 	*q = (*q)[:x]
-	for n_.vartype == VAR_VAR {
-		n_ = variable.get(n_.data.(Var))
+	for n.vartype == VAR_VAR {
+		n, err = variable.get(n.data.(Var))
 	}
-	n = &n_
+	if err != nil {
+		n = nil
+		return
+	}
 	err = nil
 	return
 }
@@ -82,11 +85,14 @@ func (q *Stack) DeVarTop(variable *Variable) (n *storage, err error) {
 		err = errors.New("empty stack")
 		return
 	}
-	n_ := *(*q)[q.Len()-1]
-	for n_.vartype == VAR_VAR {
-		n_ = variable.get(n_.data.(Var))
+	n = (*q)[q.Len()-1]
+	for n.vartype == VAR_VAR {
+		n, err = variable.get(n.data.(Var))
 	}
-	n = &n_
+	if err != nil {
+		n = nil
+		return
+	}
 	err = nil
 	return
 }
@@ -143,15 +149,12 @@ func (v *Variable) add(name Var, val storage) {
 	}
 }
 
-func (v Variable) get(name Var) (val storage) {
+func (v Variable) get(name Var) (val *storage, err error) {
 	if _, ok := v.stack[name]; ok {
-		val_, err := v.stack[name].Top()
-		if err != nil {
-			panic(err)
-		}
-		val = *val_
+		val, err = v.stack[name].Top()
 	} else {
-		panic("Variable Undefined: " + name.toString())
+		val = nil
+		err = errors.New("Variable Undefined: " + name.toString())
 	}
 	return
 }
