@@ -140,15 +140,27 @@ func evaluate(line []lexical, variable *Variable) *storage {
 		case LEX_EXPR:
 			stack.Push(&storage{VAR_VAR, Var(line[i].data)})
 		case LEX_OPR:
-			temp := *stack.DeVarPop(variable)
-			ret := *stack.DeVarPop(variable)
-			ret_pointer := operation(line[i].data, ret, temp)
+			temp, err := stack.DeVarPop(variable)
+			if err != nil {
+				panic(err)
+			}
+			ret, err := stack.DeVarPop(variable)
+			if err != nil {
+				panic(err)
+			}
+			ret_pointer := operation(line[i].data, *ret, *temp)
 			if ret_pointer != nil {
 				stack.Push(ret_pointer)
 			}
 		case LEX_NAMESPACE:
-			temp := *stack.Pop()
-			ret := *stack.DeVarPop(variable)
+			temp, err := stack.Pop()
+			if err != nil {
+				panic(err)
+			}
+			ret, err := stack.DeVarPop(variable)
+			if err != nil {
+				panic(err)
+			}
 			class := ret.data.(Variable)
 			val := class.get(temp.data.(Var))
 			stack.Push(&val)
@@ -168,7 +180,7 @@ func evaluate(line []lexical, variable *Variable) *storage {
 						another_para--
 					}
 					segment_data = append(segment_data, line[i])
-					if line[i].fsm == LEX_FUNC {
+					if line[i].fsm == LEX_FUNC && another_para == 0 {
 						is_function = len(segment_data)
 					}
 					i++
@@ -190,30 +202,58 @@ func evaluate(line []lexical, variable *Variable) *storage {
 			if line[i].data == "(" {
 				stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
 			} else {
-				if stack.Top().vartype == VAR_FSM && stack.Top().data.toString() == "(" {
+				top, err := stack.Top()
+				if err != nil {
+					panic(err)
+				}
+				if top.vartype == VAR_FSM && top.data.toString() == "(" {
 					stack.Pop()
 				} else {
-					argc = append(argc, *stack.DeVarPop(variable))
-					for stack.Len() > 1 && stack.Top().data.toString() != "(" { // TODO: improvement
+					temp, err := stack.DeVarPop(variable)
+					if err != nil {
+						panic(err)
+					}
+					argc = append(argc, *temp)
+					top, err = stack.Top()
+					if err != nil {
+						panic(err)
+					}
+					for stack.Len() > 1 && top.data.toString() != "(" { // TODO: improvement
 						stack.Pop()
-						argc = append(argc, *stack.DeVarPop(variable))
+						temp, err = stack.DeVarPop(variable)
+						if err != nil {
+							panic(err)
+						}
+						argc = append(argc, *temp)
+						top, err = stack.Top()
+						if err != nil {
+							panic(err)
+						}
 					}
 					stack.Pop()
 				}
-				var lambda storage
-				lambda = *stack.DeVarPop(variable)
+				lambda, err := stack.DeVarPop(variable)
+				if err != nil {
+					panic(err)
+				}
 				argc_ := make([]storage, len(argc), len(argc))
 				for index, data := range argc {
 					argc_[len(argc)-index-1] = data
 				}
-				ret := do_func(lambda, argc_, variable)
+				ret := do_func(*lambda, argc_, variable)
 				if ret != nil {
 					stack.Push(ret)
 				}
 			}
 		case LEX_ASSIGN:
-			temp := stack.DeVarPop(variable)
-			ret := stack.Pop()
+			temp, err := stack.DeVarPop(variable)
+			if err != nil {
+				panic(err)
+			}
+			ret, err := stack.Pop()
+			if err != nil {
+				panic(err)
+			}
 			variable.set(ret.data.(Var), *temp)
 			stack.Push(temp)
 		case LEX_ADDR:
@@ -226,14 +266,22 @@ func evaluate(line []lexical, variable *Variable) *storage {
 				}
 				ret := evaluate(addr, variable).data.(number)
 				loc := ret.toInt()
-				arr := variable.get(stack.Pop().data.(Var)).data.(array)
+				val, err := stack.DeVarPop(variable)
+				if err != nil {
+					panic(err)
+				}
+				arr := val.data.(array)
 				stack.Push(arr.get(loc))
 			}
 		}
 		i++
 	}
 	if stack.Len() != 0 {
-		return stack.Top()
+		val, err := stack.Top()
+		if err != nil {
+			panic(err)
+		}
+		return val
 	}
 	return nil
 }

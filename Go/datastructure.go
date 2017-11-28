@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -34,33 +35,60 @@ func (q *Stack) Push(n *storage) {
 	*q = append(*q, n)
 }
 
-func (q *Stack) Pop() (n *storage) {
+func (q *Stack) Pop() (n *storage, err error) {
 	x := q.Len() - 1
+	if x < 0 {
+		n = nil
+		err = errors.New("empty stack")
+		return
+	}
 	n = (*q)[x]
 	*q = (*q)[:x]
+	err = nil
 	return
 }
 
-func (q *Stack) Top() *storage {
-	return (*q)[q.Len()-1]
+func (q *Stack) Top() (n *storage, err error) {
+	if q.Len()-1 < 0 {
+		n = nil
+		err = errors.New("empty stack")
+		return
+	}
+	n = (*q)[q.Len()-1]
+	err = nil
+	return
 }
 
-func (q *Stack) DeVarPop(variable *Variable) *storage {
+func (q *Stack) DeVarPop(variable *Variable) (n *storage, err error) {
 	x := q.Len() - 1
-	n := *(*q)[x]
-	*q = (*q)[:x]
-	for n.vartype == VAR_VAR {
-		n = variable.get(n.data.(Var))
+	if x < 0 {
+		n = nil
+		err = errors.New("empty stack")
+		return
 	}
-	return &n
+	n_ := *(*q)[x]
+	*q = (*q)[:x]
+	for n_.vartype == VAR_VAR {
+		n_ = variable.get(n_.data.(Var))
+	}
+	n = &n_
+	err = nil
+	return
 }
 
-func (q *Stack) DeVarTop(variable *Variable) *storage {
-	n := *(*q)[q.Len()-1]
-	for n.vartype == VAR_VAR {
-		n = variable.get(n.data.(Var))
+func (q *Stack) DeVarTop(variable *Variable) (n *storage, err error) {
+	if q.Len()-1 < 0 {
+		n = nil
+		err = errors.New("empty stack")
+		return
 	}
-	return &n
+	n_ := *(*q)[q.Len()-1]
+	for n_.vartype == VAR_VAR {
+		n_ = variable.get(n_.data.(Var))
+	}
+	n = &n_
+	err = nil
+	return
 }
 
 func (q *Stack) Len() int {
@@ -117,9 +145,13 @@ func (v *Variable) add(name Var, val storage) {
 
 func (v Variable) get(name Var) (val storage) {
 	if _, ok := v.stack[name]; ok {
-		val = *v.stack[name].Top()
+		val_, err := v.stack[name].Top()
+		if err != nil {
+			panic(err)
+		}
+		val = *val_
 	} else {
-		panic("Variable Undefined: " + name)
+		panic("Variable Undefined: " + name.toString())
 	}
 	return
 }
