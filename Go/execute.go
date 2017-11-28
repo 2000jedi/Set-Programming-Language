@@ -112,7 +112,7 @@ func operation(op string, num1, num2 storage) *storage {
 }
 
 func evaluate(line []lexical, variable *Variable) *storage {
-	if !*debug_flag {
+	if !*debugFlag {
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println("\nTraceback: ")
@@ -168,7 +168,7 @@ func evaluate(line []lexical, variable *Variable) *storage {
 			}
 			stack.Push(val)
 		case LEX_SEPERATOR:
-			stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
+			stack.Push(&storage{VAR_FSM, Var(line[i].data)})
 		case LEX_BRACES:
 			if line[i].data == "{" {
 				is_function := 0
@@ -198,12 +198,12 @@ func evaluate(line []lexical, variable *Variable) *storage {
 				}
 
 				exprs := segment_data[is_function:]
-				stack.Push(&storage{VAR_FUNCTION, function{argv, exprs}})
+				stack.Push(&storage{VAR_FUNCTION, Function{argv, exprs}})
 			}
 		case LEX_CALL:
 			var argc []storage
 			if line[i].data == "(" {
-				stack.Push(&storage{VAR_FSM, Var(line[i].data)}) // TODO: improvement
+				stack.Push(&storage{VAR_FSM, Var(line[i].data)})
 			} else {
 				top, err := stack.Top()
 				if err != nil {
@@ -221,7 +221,7 @@ func evaluate(line []lexical, variable *Variable) *storage {
 					if err != nil {
 						panic(err)
 					}
-					for stack.Len() > 1 && top.data.toString() != "(" { // TODO: improvement
+					for stack.Len() > 1 && top.data.toString() != "(" {
 						stack.Pop()
 						temp, err = stack.DeVarPop(variable)
 						if err != nil {
@@ -243,7 +243,10 @@ func evaluate(line []lexical, variable *Variable) *storage {
 				for index, data := range argc {
 					argc_[len(argc)-index-1] = data
 				}
-				ret := do_func(*lambda, argc_, variable)
+				ret, err := do_func(*lambda, argc_, variable)
+				if err != nil {
+					panic(err)
+				}
 				if ret != nil {
 					stack.Push(ret)
 				}

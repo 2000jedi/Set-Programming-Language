@@ -6,15 +6,15 @@ import (
 )
 
 func invoke_builtin(v *Variable) {
-	v.add("println", storage{VAR_C_FUNCTION, c_function{builtin_println}})
-	v.add("print", storage{VAR_C_FUNCTION, c_function{builtin_printf}})
-	v.add("if", storage{VAR_C_FUNCTION, c_function{builtin_if}})
-	v.add("for", storage{VAR_C_FUNCTION, c_function{builtin_for}})
-	v.add("range", storage{VAR_C_FUNCTION, c_function{builtin_range}})
-	v.add("import", storage{VAR_C_FUNCTION, c_function{builtin_import}})
-	v.add("array", storage{VAR_C_FUNCTION, c_function{array_gen}})
-	v.add("set", storage{VAR_C_FUNCTION, c_function{set_gen}})
-	v.add("exit", storage{VAR_C_FUNCTION, c_function{builtin_exit}})
+	v.add("println", storage{VAR_C_FUNCTION, CFunction{builtin_println}})
+	v.add("print", storage{VAR_C_FUNCTION, CFunction{builtin_printf}})
+	v.add("if", storage{VAR_C_FUNCTION, CFunction{builtin_if}})
+	v.add("for", storage{VAR_C_FUNCTION, CFunction{builtin_for}})
+	v.add("range", storage{VAR_C_FUNCTION, CFunction{builtin_range}})
+	v.add("import", storage{VAR_C_FUNCTION, CFunction{builtin_import}})
+	v.add("array", storage{VAR_C_FUNCTION, CFunction{array_gen}})
+	v.add("set", storage{VAR_C_FUNCTION, CFunction{set_gen}})
+	v.add("exit", storage{VAR_C_FUNCTION, CFunction{builtin_exit}})
 }
 
 func builtin_printf(data []storage, variable *Variable) *storage {
@@ -42,15 +42,27 @@ func builtin_if(data []storage, variable *Variable) *storage {
 	if len(data) == 2 {
 		branch_then := data[1]
 		if cond {
-			return do_func(branch_then, []storage{}, variable)
+			if ans, err := do_func(branch_then, []storage{}, variable); err != nil {
+				panic(err)
+			} else {
+				return ans
+			}
 		}
 	} else {
 		branch_then := data[1]
 		branch_else := data[2]
 		if cond {
-			return do_func(branch_then, []storage{}, variable)
+			if ans, err := do_func(branch_then, []storage{}, variable); err != nil {
+				panic(err)
+			} else {
+				return ans
+			}
 		} else {
-			return do_func(branch_else, []storage{}, variable)
+			if ans, err := do_func(branch_else, []storage{}, variable); err != nil {
+				panic(err)
+			} else {
+				return ans
+			}
 		}
 	}
 	return nil
@@ -71,7 +83,11 @@ func builtin_for(data []storage, variable *Variable) *storage {
 	for p := a.Front(); p != nil; p = p.Next() {
 		var stg []storage
 		stg = append(stg, storage{VAR_NUMBER, p.Value.(number)})
-		return_set.append(do_func(b, stg, variable).data.(number))
+		if ans, err := do_func(b, stg, variable); err != nil {
+			panic(err)
+		} else {
+			return_set.append(ans.data.(number))
+		}
 	}
 	return &storage{VAR_SET, return_set}
 }

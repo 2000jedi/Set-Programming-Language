@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-func process_escapes(s string) string {
+func processEscapes(s string) string {
 	if s == "\\n" {
 		return "\n"
 	} else {
@@ -10,25 +10,25 @@ func process_escapes(s string) string {
 	}
 }
 
-func is_expr_letters(c byte) bool {
+func isExprLetter(c byte) bool {
 	return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_'
 }
 
-func is_expr_letter_latter(c byte) bool {
-	return ('0' <= c && c <= '9') || is_expr_letters(c)
+func isExprLetterLatter(c byte) bool {
+	return ('0' <= c && c <= '9') || isExprLetter(c)
 }
 
-func is_number(c byte) bool {
+func isNum(c byte) bool {
 	return ('0' <= c && c <= '9') || c == '.'
 }
 
-func not_opr(c int) bool {
+func notOpr(c int) bool {
 	return c != VAR_NUMBER && c != VAR_SET && c != VAR_VAR
 	//return c != VAR_NUMBER && c != VAR_SET && c != VAR_ADDR && c != VAR_EXPR
 }
 
-func lex_parse(lines []string) (lex_lines []Lexs) {
-	if !*debug_flag {
+func lexParse(lines []string) (lexLines []Lexs) {
+	if !*debugFlag {
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println(r)
@@ -50,7 +50,7 @@ func lex_parse(lines []string) (lex_lines []Lexs) {
 				i++
 				for line[i] != '"' {
 					if line[i] == '\\' {
-						temp += process_escapes(string(line[i]) + string(line[i+1]))
+						temp += processEscapes(string(line[i]) + string(line[i+1]))
 						i += 2
 					} else {
 						temp += string(line[i])
@@ -63,7 +63,7 @@ func lex_parse(lines []string) (lex_lines []Lexs) {
 				i++
 				for line[i] != '\'' {
 					if line[i] == '\\' {
-						temp += process_escapes(string(line[i]) + string(line[i+1]))
+						temp += processEscapes(string(line[i]) + string(line[i+1]))
 						i += 2
 					} else {
 						temp += string(line[i])
@@ -86,10 +86,10 @@ func lex_parse(lines []string) (lex_lines []Lexs) {
 					lexs.Push(lexical{LEX_OPR, string(line[i])})
 				}
 			case '-':
-				if is_number(line[i+1]) && not_opr(lexs.Top().fsm) {
+				if isNum(line[i+1]) && notOpr(lexs.Top().fsm) {
 					temp := string(line[i])
 					i++
-					for is_number(line[i]) {
+					for isNum(line[i]) {
 						temp += string(line[i])
 						i++
 					}
@@ -141,21 +141,21 @@ func lex_parse(lines []string) (lex_lines []Lexs) {
 			case '[', ']':
 				lexs.Push(lexical{LEX_ADDR, string(line[i])})
 			default:
-				if is_expr_letters(line[i]) {
+				if isExprLetter(line[i]) {
 					temp := string(line[i])
 					i++
-					for is_expr_letters(line[i]) {
+					for isExprLetter(line[i]) {
 						temp += string(line[i])
 						i++
 					}
 					i--
 					lexs.Push(lexical{LEX_EXPR, temp})
-				} else if line[i] == '.' && is_expr_letters(line[i+1]) {
+				} else if line[i] == '.' && isExprLetter(line[i+1]) {
 					lexs.Push(lexical{LEX_NAMESPACE, "."})
-				} else if is_number(line[i]) {
+				} else if isNum(line[i]) {
 					temp := string(line[i])
 					i++
-					for is_number(line[i]) {
+					for isNum(line[i]) {
 						temp += string(line[i])
 						i++
 					}
@@ -168,7 +168,7 @@ func lex_parse(lines []string) (lex_lines []Lexs) {
 			i++
 		}
 		if lexs.Len() != 0 {
-			lex_lines = append(lex_lines, lexs)
+			lexLines = append(lexLines, lexs)
 		}
 	}
 	return

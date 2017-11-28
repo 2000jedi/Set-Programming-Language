@@ -159,12 +159,13 @@ func (v Variable) get(name Var) (val *storage, err error) {
 	return
 }
 
-func (v *Variable) del(name Var) {
+func (v *Variable) del(name Var) (err error) {
 	if _, ok := v.stack[name]; ok {
 		v.stack[name].Pop()
 	} else {
-		panic("Variable Undefined: " + name)
+		return errors.New("Variable Undefined: " + name.toString())
 	}
+	return nil
 }
 
 func (v *Variable) set(name Var, val storage) {

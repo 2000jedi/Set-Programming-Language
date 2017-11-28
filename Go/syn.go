@@ -24,7 +24,7 @@ func init() {
 }
 
 func segment(line Lexs) (prog []lexical) {
-	if !*debug_flag {
+	if !*debugFlag {
 		defer func() {
 			if r := recover(); r != nil {
 				fmt.Println(r)
@@ -111,7 +111,7 @@ func segment(line Lexs) (prog []lexical) {
 	return
 }
 
-func syn_parse(lines []Lexs) (prog [][]lexical) {
+func synParse(lines []Lexs) (prog [][]lexical) {
 	for _, line := range lines {
 		prog = append(prog, segment(line))
 	}

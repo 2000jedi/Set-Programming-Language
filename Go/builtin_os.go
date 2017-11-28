@@ -2,7 +2,7 @@
 package main
 
 func invoke_os() (v Variable) {
-	v.add("open", storage{VAR_C_FUNCTION, c_function{os_open}})
+	v.add("open", storage{VAR_C_FUNCTION, CFunction{os_open}})
 	return
 }
 

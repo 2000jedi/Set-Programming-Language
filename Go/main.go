@@ -10,8 +10,8 @@ import (
 	"github.com/chzyer/readline"
 )
 
-var debug_flag *bool
-var help_flag *bool
+var debugFlag *bool
+var helpFlag *bool
 var addr *string
 
 func interactive() {
@@ -46,7 +46,7 @@ func interactive() {
 			panic(err)
 		}
 		file := strings.Split(text, "\n")
-		execute(syn_parse(lex_parse(file)), &variable)
+		execute(synParse(lexParse(file)), &variable)
 	}
 }
 
@@ -58,7 +58,7 @@ func runfile(s string) Variable {
 	file := strings.Split(string(dat), "\n")
 	var variable Variable
 	variable.init()
-	execute(syn_parse(lex_parse(file)), &variable)
+	execute(synParse(lexParse(file)), &variable)
 	return variable
 }
 
@@ -73,7 +73,7 @@ func main() {
 
 func init() {
 	// define & parse flags
-	debug_flag = flag.Bool("debug", false, "Enable Debug Mode")
+	debugFlag = flag.Bool("debug", false, "Enable Debug Mode")
 	addr = flag.String("d", "", "Execute a file")
 	flag.Parse()
 }

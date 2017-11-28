@@ -1,47 +1,55 @@
 package main
 
-type function struct {
+import (
+	"errors"
+)
+
+type Function struct {
 	argv  []storage
 	exprs []lexical
 }
 
-func (f *function) function(vals []storage, variable *Variable) (ret_val *storage) {
+func (f *Function) function(vals []storage, variable *Variable) (ret_val *storage) {
 	for i, val := range f.argv {
 		variable.add(val.data.(Var), vals[i])
 	}
 	ret_val = evaluate(f.exprs, variable)
 	for _, val := range f.argv {
-		variable.del(val.data.(Var))
+		if err := variable.del(val.data.(Var)); err != nil {
+			panic(err)
+		}
 	}
 	return
 }
 
-func (f function) toString() string {
+func (f Function) toString() string {
 	panic(ERR_FUNC_PRINT)
 }
 
-type c_function struct {
+type CFunction struct {
 	function func(data []storage, variable *Variable) *storage
 }
 
-func (f c_function) toString() string {
+func (f CFunction) toString() string {
 	panic(ERR_FUNC_PRINT)
 }
 
-func do_func(lambda storage, argc []storage, variable *Variable) (s *storage) {
+func do_func(lambda storage, argc []storage, variable *Variable) (s *storage, err error) {
 	if lambda.vartype == VAR_FUNCTION {
-		f := lambda.data.(function)
-		stackTrace = append(stackTrace, "In function")
+		f := lambda.data.(Function)
+		stackTrace = append(stackTrace, "In function:")
 		s = f.function(argc, variable)
 		stackTrace = stackTrace[:len(stackTrace)-1]
 	} else if lambda.vartype == VAR_C_FUNCTION {
-		f := lambda.data.(c_function)
+		f := lambda.data.(CFunction)
 		stackTrace = append(stackTrace, "In function:")
 		s = f.function(argc, variable)
 		stackTrace = stackTrace[:len(stackTrace)-1]
 	} else {
-		panic(ERR_NOT_FUNC)
+		s, err = nil, errors.New(ERR_NOT_FUNC)
+		return
 	}
+	err = nil
 	return
 }
 
