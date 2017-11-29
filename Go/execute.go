@@ -112,13 +112,11 @@ func operation(op string, num1, num2 storage) *storage {
 }
 
 func evaluate(line []lexical, variable *Variable) *storage {
+	lineNum := 1
 	if !*debugFlag {
 		defer func() {
 			if r := recover(); r != nil {
-				fmt.Println("\nTraceback: ")
-				for _, v := range stackTrace {
-					fmt.Printf("    %s\n", v)
-				}
+				fmt.Printf("In line %d: ", lineNum)
 				fmt.Println(r)
 				fmt.Printf("\033[0m\n")
 			}
@@ -129,6 +127,13 @@ func evaluate(line []lexical, variable *Variable) *storage {
 	i := 0
 	for i < len(line) {
 		switch line[i].fsm {
+		case LEX_EOL:
+			if line[i].data == "\n" {
+				lineNum++
+			}
+			for stack.Len() > 0 {
+				stack.Pop()
+			}
 		case LEX_NUMBER:
 			var n number
 			n.construct(line[i].data)
@@ -290,11 +295,4 @@ func evaluate(line []lexical, variable *Variable) *storage {
 		return val
 	}
 	return nil
-}
-
-func execute(lines [][]lexical, variable *Variable) {
-	for k, line := range lines {
-		stackTrace = []string{fmt.Sprintf("In line %d: ", k)}
-		evaluate(line, variable)
-	}
 }

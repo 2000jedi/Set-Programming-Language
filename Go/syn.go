@@ -35,6 +35,11 @@ func segment(line Lexs) (prog []lexical) {
 	i := 0
 	for i < len(line) {
 		switch line[i].fsm {
+		case LEX_EOL:
+			for stack.Len() > 0 {
+				prog = append(prog, stack.Pop())
+			}
+			prog = append(prog, line[i])
 		case LEX_EXPR, LEX_NUMBER, LEX_STR:
 			prog = append(prog, line[i])
 		case LEX_FUNC:
@@ -111,9 +116,6 @@ func segment(line Lexs) (prog []lexical) {
 	return
 }
 
-func synParse(lines []Lexs) (prog [][]lexical) {
-	for _, line := range lines {
-		prog = append(prog, segment(line))
-	}
-	return
+func synParse(line Lexs) (prog []lexical) {
+	return segment(line)
 }

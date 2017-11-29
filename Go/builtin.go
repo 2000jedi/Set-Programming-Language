@@ -20,17 +20,19 @@ func invoke_builtin(v *Variable) {
 func builtin_printf(data []storage, variable *Variable) *storage {
 	for k, v := range data {
 		if k != len(data)-1 {
-			fmt.Print(v.data.toString(), " ")
+			fmt.Print(v.data.toString() + " ")
 		} else {
 			fmt.Print(v.data.toString())
 		}
 	}
+	newlineFlag = false
 	return nil
 }
 
 func builtin_println(data []storage, variable *Variable) *storage {
 	builtin_printf(data, variable)
 	fmt.Println()
+	newlineFlag = true
 	return nil
 }
 
@@ -86,7 +88,9 @@ func builtin_for(data []storage, variable *Variable) *storage {
 		if ans, err := do_func(b, stg, variable); err != nil {
 			panic(err)
 		} else {
-			return_set.append(ans.data.(number))
+			if ans != nil {
+				return_set.append(ans.data.(number))
+			}
 		}
 	}
 	return &storage{VAR_SET, return_set}
@@ -127,13 +131,24 @@ func builtin_import(data []storage, variable *Variable) *storage {
 	if len(data) > 1 {
 		panic(ERR_ARG_NUM)
 	}
-	var_ := runfile(data[0].data.toString())
-	return &storage{VAR_CLASS, var_}
+	v := (data[0].data.toString())
+	if len(v) >= 3 && v[len(v)-3:] == ".sp" {
+		return &storage{VAR_CLASS, runfile(v)}
+	} else {
+		return &storage{VAR_CLASS, builtin_imports[v]}
+	}
 }
 
 func builtin_exit(data []storage, variable *Variable) *storage {
 	os.Exit(0)
 	return nil
+}
+
+func init() {
+	builtin_imports = map[string]Variable{
+		"debug": invoke_debug(),
+		"os":    invoke_os(),
+	}
 }
 
 const (

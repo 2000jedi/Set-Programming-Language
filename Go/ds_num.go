@@ -44,7 +44,7 @@ func (n *number) construct(v string) {
 
 func (n number) toString() string {
 	if n.denominator == 1 {
-		return fmt.Sprint(n.numerator)
+		return strconv.Itoa(n.numerator)
 	} else {
 		return fmt.Sprintf("%d/%d", n.numerator, n.denominator)
 	}
@@ -52,10 +52,6 @@ func (n number) toString() string {
 
 func (n *number) toInt() int {
 	return n.numerator / n.denominator
-}
-
-func (n *number) print() {
-	fmt.Print(n.toString())
 }
 
 func gcd(a, b int) int {

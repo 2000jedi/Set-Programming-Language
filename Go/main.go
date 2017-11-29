@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strings"
 
 	"github.com/chzyer/readline"
 )
 
-var debugFlag *bool
-var helpFlag *bool
-var addr *string
+var (
+	debugFlag   *bool
+	helpFlag    *bool
+	newlineFlag bool
+	addr        *string
+)
+
+var builtin_imports map[string]Variable
 
 func interactive() {
-	fmt.Println("SPL 17.11.17 (build on Go 1.9)")
+	fmt.Println("SPL 17.11.28 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 
 	l, err := readline.NewEx(&readline.Config{
@@ -33,6 +37,7 @@ func interactive() {
 	variable.init()
 
 	for {
+		newlineFlag = true
 		text, err := l.Readline()
 		if err == readline.ErrInterrupt {
 			if len(text) == 0 {
@@ -45,8 +50,10 @@ func interactive() {
 		} else if err != nil {
 			panic(err)
 		}
-		file := strings.Split(text, "\n")
-		execute(synParse(lexParse(file)), &variable)
+		evaluate(synParse(lexParse(text)), &variable)
+		if !newlineFlag {
+			fmt.Println()
+		}
 	}
 }
 
@@ -55,10 +62,9 @@ func runfile(s string) Variable {
 	if err != nil {
 		panic(err)
 	}
-	file := strings.Split(string(dat), "\n")
 	var variable Variable
 	variable.init()
-	execute(synParse(lexParse(file)), &variable)
+	evaluate(synParse(lexParse(string(dat))), &variable)
 	return variable
 }
 

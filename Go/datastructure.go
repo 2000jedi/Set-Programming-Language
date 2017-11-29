@@ -192,7 +192,8 @@ const (
 )
 
 const (
-	LEX_NUMBER int = iota
+	LEX_EOL int = iota
+	LEX_NUMBER
 	LEX_ASSIGN
 	LEX_EXPR
 	LEX_OPR
