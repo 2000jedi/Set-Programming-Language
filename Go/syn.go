@@ -36,7 +36,7 @@ func segment(line Lexs) (prog []lexical) {
 	for i < len(line) {
 		switch line[i].fsm {
 		case LEX_EOL:
-			for stack.Len() > 0 {
+			for stack.Len() > 0 && (stack.Top().data != "{" || stack.Top().fsm != LEX_BRACES) {
 				prog = append(prog, stack.Pop())
 			}
 			prog = append(prog, line[i])

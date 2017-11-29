@@ -8,4 +8,6 @@ print("Word of Dawn\n")
 #this is a comment
 x = 5
 x = 3*x+7
-if(x==22,{println(2*x)},{println(3*x})
+println(x)
+if(x==23,{println(2*x)},{println(3*x})
+println(if(1==1,{println(range(1,100,2)*5/2);"NO"},{"YES"}))

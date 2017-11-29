@@ -19,7 +19,7 @@ var (
 var builtin_imports map[string]Variable
 
 func interactive() {
-	fmt.Println("SPL 17.11.28 (build on Go 1.9)")
+	fmt.Println("SPL 17.11.29 (build on Go 1.9)")
 	fmt.Println("Type exit() to exit")
 
 	l, err := readline.NewEx(&readline.Config{

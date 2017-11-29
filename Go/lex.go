@@ -41,7 +41,9 @@ func lexParse(line string) (lexs Lexs) {
 		switch line[i] {
 		case ' ':
 		case '#':
-			i = len(line)
+			for i < len(line) && line[i] != '\n' {
+				i++
+			}
 		case '\n', ';':
 			lexs.Push(lexical{LEX_EOL, string(line[i])})
 		case '"':
